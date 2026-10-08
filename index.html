@@ -1,0 +1,2718 @@
+<!doctype html>
+<html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="robots" content="noindex"><title>Two-Glass Test</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=Young+Serif&family=IBM+Plex+Mono:wght@500;600&display=swap">
+<style>
+/* Mise en page : fiche de dégustation. Une colonne, des pastilles à code (les verres vus de dessus) comme objet central, résultats présentés comme un rapport de laboratoire avec verdicts. */
+:root{
+  --bg:#F5F3F4; --surface:#FFFFFF; --surface2:#EDE8EB; --fg:#24141A; --muted:#66555C; --line:#DCD3D7;
+  --accent:#7B1A35; --accent-fg:#FFFFFF; --accent-soft:#F4E3E8;
+  --gold:#7A5A0C; --gold-soft:#F6EDD3;
+  --ok:#17663F; --ok-soft:#DAEEE2; --warn:#85500A; --warn-soft:#FAEACB; --bad:#9F2019; --bad-soft:#F8DAD6;
+  --focus:#2F6FED;
+  --f-display:'Young Serif',Georgia,'Times New Roman',serif;
+  --f-body:'Instrument Sans',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
+  --f-mono:'IBM Plex Mono',ui-monospace,Menlo,Consolas,monospace;
+  --r:14px;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#161014; --surface:#211A1E; --surface2:#2C2328; --fg:#F3EAEE; --muted:#B3A2AA; --line:#3A2E34;
+    --accent:#E8819E; --accent-fg:#2A0B16; --accent-soft:#3A1B26;
+    --gold:#E3BD65; --gold-soft:#35290F;
+    --ok:#6FD19B; --ok-soft:#163324; --warn:#EDB25A; --warn-soft:#38270D; --bad:#F59A92; --bad-soft:#3B1B18;
+    --focus:#8AB4FF; color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#161014; --surface:#211A1E; --surface2:#2C2328; --fg:#F3EAEE; --muted:#B3A2AA; --line:#3A2E34;
+  --accent:#E8819E; --accent-fg:#2A0B16; --accent-soft:#3A1B26;
+  --gold:#E3BD65; --gold-soft:#35290F;
+  --ok:#6FD19B; --ok-soft:#163324; --warn:#EDB25A; --warn-soft:#38270D; --bad:#F59A92; --bad-soft:#3B1B18;
+  --focus:#8AB4FF; color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font-family:var(--f-body);font-size:15px;line-height:1.5;-webkit-text-size-adjust:100%}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:3px solid var(--focus);outline-offset:2px}
+h1,h2,h3{margin:0;font-weight:400;font-family:var(--f-display);text-wrap:balance;line-height:1.2}
+h1{font-size:26px} h2{font-size:21px} h3{font-size:17px}
+p{margin:0}
+.wrap{max-width:880px;margin-inline:auto;padding-inline:16px}
+main.wrap{padding-block:18px 56px;display:grid;gap:18px}
+.lead{color:var(--muted);max-width:62ch}
+.hint{color:var(--muted);font-size:13px;margin-top:6px;max-width:60ch}
+.sub{color:var(--muted);font-size:12.5px;font-variant-numeric:tabular-nums}
+.num{font-variant-numeric:tabular-nums}
+
+/* en-tête opérateur */
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);border-bottom:1px solid var(--line)}
+.bar{display:flex;align-items:center;justify-content:space-between;gap:12px;padding-block:12px 2px}
+.brand{display:flex;align-items:center;gap:10px;min-width:0}
+.brand svg{width:30px;height:20px;color:var(--accent);flex:none}
+.brand-t{font-family:var(--f-display);font-size:19px}
+.brand-s{color:var(--muted);font-size:12.5px;letter-spacing:.06em;text-transform:uppercase}
+.mode{font-size:12px;padding:3px 9px;border-radius:99px;border:1px solid var(--line);color:var(--muted);white-space:nowrap}
+.tabs{display:flex;gap:2px;overflow-x:auto;scrollbar-width:none}
+.tabs::-webkit-scrollbar{display:none}
+.tabs button{border:0;background:none;padding:10px 12px;border-bottom:2px solid transparent;color:var(--muted);font-weight:500;white-space:nowrap;min-height:44px}
+.tabs button[aria-selected="true"]{color:var(--fg);font-weight:600;border-bottom-color:var(--accent)}
+
+/* blocs */
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:20px;display:grid;gap:16px;min-width:0}
+.blk{border-top:1px solid var(--line);padding-top:18px;display:grid;gap:10px;min-width:0}
+.field{display:grid;gap:6px;min-width:0}
+.lbl,label{font-weight:600;font-size:14px}
+input[type=text],input[type=number],select,textarea{width:100%;min-height:46px;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:var(--bg);color:var(--fg)}
+textarea{min-height:84px;resize:vertical}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{min-height:44px;padding:8px 14px;border:1px solid var(--line);border-radius:99px;background:var(--surface);text-align:left}
+.chip[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--accent-fg);font-weight:600}
+.btn{min-height:46px;padding:0 20px;border-radius:12px;border:1px solid var(--accent);background:var(--accent);color:var(--accent-fg);font-weight:600}
+.btn.ghost{background:transparent;color:var(--accent)}
+.btn.lg{min-height:56px;width:100%;font-size:17px}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.btn.quiet{border-color:var(--line);color:var(--muted);background:transparent;font-weight:500}
+.row{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.err{color:var(--bad);font-size:14px}
+
+.banner{padding:10px 14px;border-radius:10px;font-size:14px}
+.banner.demo{background:var(--gold-soft);color:var(--gold)}
+.banner.info{background:var(--accent-soft);color:var(--accent)}
+.banner.alert{background:var(--bad-soft);color:var(--bad);font-weight:600}
+.banner.ok{background:var(--ok-soft);color:var(--ok)}
+.tag{display:inline-block;padding:2px 10px;border-radius:99px;font-size:12.5px;font-weight:600;white-space:nowrap}
+.tag.ok{background:var(--ok-soft);color:var(--ok)}
+.tag.warn{background:var(--warn-soft);color:var(--warn)}
+.tag.neutral,.tag.none{background:var(--surface2);color:var(--muted)}
+.tag.t{background:var(--accent);color:var(--accent-fg)}
+.tag.u{background:var(--surface2);color:var(--fg)}
+.tag.bad{background:var(--bad-soft);color:var(--bad)}
+
+/* pastilles de code */
+.code{display:inline-grid;place-items:center;width:84px;height:84px;border-radius:50%;border:2px solid var(--fg);background:var(--surface);font:600 26px/1 var(--f-mono);font-variant-numeric:tabular-nums;letter-spacing:.02em}
+.code.sm{width:50px;height:50px;font-size:16px;border-width:1.5px}
+.glasses{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+.glass{display:grid;justify-items:center;gap:6px;padding:12px 10px;border:1px solid transparent;border-radius:18px;background:transparent;min-width:104px}
+.glass:hover{background:var(--surface2)}
+.glass[aria-pressed="true"]{background:var(--accent-soft);border-color:var(--accent)}
+.glass[aria-pressed="true"] .code{background:var(--accent);border-color:var(--accent);color:var(--accent-fg)}
+.gpos{font-size:12.5px;color:var(--muted)}
+.scale{display:flex;gap:6px}
+.scale button{flex:1;min-width:0;min-height:46px;border:1px solid var(--line);border-radius:10px;background:var(--surface);font-weight:600;font-variant-numeric:tabular-nums}
+.scale button[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--accent-fg)}
+.ends{display:flex;justify-content:space-between;gap:12px;font-size:12.5px;color:var(--muted)}
+
+/* fiche de préparation */
+.plist{list-style:none;margin:0;padding:0;display:grid;gap:10px}
+.prow{display:flex;align-items:center;gap:14px;padding:10px 12px;border:1px solid var(--line);border-radius:12px;background:var(--bg)}
+.prow .ptxt{flex:1;min-width:0;color:var(--muted)}
+
+/* participant */
+.ptop{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg)}
+.pbar{display:flex;justify-content:space-between;gap:12px;padding-block:12px 10px;font-size:13px;color:var(--muted)}
+.pbar b{font-family:var(--f-display);font-weight:400;font-size:16px;color:var(--fg)}
+.prog{height:4px;background:var(--surface2)}
+.prog i{display:block;height:100%;background:var(--accent);transition:width .25s}
+.pmain{font-size:17px;gap:22px}
+.pmain h1{font-size:28px}
+.pmain .chip{min-height:50px;font-size:16px}
+.steplist{margin:0;padding-left:20px;display:grid;gap:6px}
+.revtbl{display:grid;gap:8px}
+.rev{display:flex;align-items:center;gap:12px}
+
+/* résultats */
+.grid2{display:grid;gap:14px;grid-template-columns:1fr}
+@media (min-width:720px){.grid2{grid-template-columns:1fr 1fr}}
+.kpi{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:18px;display:grid;gap:8px;align-content:start;min-width:0}
+.kpi .k-l{font-size:12.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:600}
+.kpi .k-v{font-family:var(--f-display);font-size:42px;line-height:1.05;font-variant-numeric:tabular-nums}
+.kpi .k-v small{font-family:var(--f-body);font-size:14px;color:var(--muted);margin-left:6px}
+.kpi p{font-size:13.5px;color:var(--muted)}
+.gauge{position:relative;height:46px;margin-top:4px}
+.g-track{position:absolute;left:0;right:0;top:30px;height:4px;border-radius:2px;background:var(--surface2)}
+.g-ci{position:absolute;top:26px;height:12px;border-radius:6px;background:var(--accent-soft);border:1px solid var(--accent)}
+.g-dot{position:absolute;top:26px;width:12px;height:12px;margin-left:-6px;border-radius:50%;background:var(--accent)}
+.g-chance{position:absolute;top:20px;height:24px;border-left:2px dashed var(--muted)}
+.g-chance span{position:absolute;top:-17px;left:-30px;width:60px;text-align:center;font-size:11px;color:var(--muted);white-space:nowrap}
+.g-axis{display:flex;justify-content:space-between;font-size:11px;color:var(--muted)}
+.tw{overflow-x:auto;border:1px solid var(--line);border-radius:12px;background:var(--surface)}
+table{border-collapse:collapse;width:100%;font-size:14px}
+th,td{padding:10px 12px;text-align:left;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-size:12px;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);font-weight:600;white-space:nowrap}
+tr:last-child td{border-bottom:0}
+td.r,th.r{text-align:right}
+tr.faint td{color:var(--muted)}
+.bars{display:grid;gap:8px}
+.bar-r{display:grid;grid-template-columns:minmax(110px,190px) 1fr 54px;gap:10px;align-items:center;font-size:14px}
+.bar-r .tr{height:12px;border-radius:6px;background:var(--surface2);overflow:hidden}
+.bar-r .tr i{display:block;height:100%;background:var(--accent);border-radius:6px}
+.bar-r .v{text-align:right;font-variant-numeric:tabular-nums;color:var(--muted)}
+.quote{display:grid;gap:8px;padding:14px;border:1px solid var(--line);border-radius:12px;background:var(--surface)}
+.quote p{font-size:14.5px}
+.filters{display:flex;flex-wrap:wrap;gap:10px;align-items:end}
+.filters .field{min-width:150px;flex:1}
+.checks{margin:0;padding:0;list-style:none;display:grid;gap:8px}
+.checks li{padding-left:22px;position:relative}
+.checks li::before{content:"";position:absolute;left:2px;top:.5em;width:9px;height:9px;border-radius:50%;border:2px solid var(--accent)}
+.checks.no li::before{border-color:var(--bad)}
+#toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--fg);color:var(--bg);padding:10px 16px;border-radius:99px;font-size:14px;opacity:0;pointer-events:none;transition:opacity .2s;max-width:calc(100% - 32px);text-align:center;z-index:20}
+#toast.on{opacity:1}
+@media (prefers-reduced-motion:reduce){.prog i,#toast{transition:none}}
+@media (max-width:480px){.kpi .k-v{font-size:36px}.bar-r{grid-template-columns:minmax(90px,130px) 1fr 46px}}
+.rates{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center;font-size:14px}.rt{display:inline-flex;gap:6px;align-items:center}.rt input{width:84px;min-height:38px}
+[hidden]{display:none!important}
+body{margin:0}
+/* pastilles de couleur */
+:root{--c-vert:#1E9E54;--c-jaune:#F5C400;--c-rouge:#D62828;--c-orange:#F47C00;--c-bleu:#1D6FD6}
+.dot{display:inline-block;width:84px;height:84px;border-radius:50%;background:var(--c);border:3px solid var(--bg);box-shadow:0 0 0 2px var(--fg)}
+.dot.sm{width:36px;height:36px;border-width:2px;box-shadow:0 0 0 1.5px var(--fg)}
+.dot.xs{width:14px;height:14px;border-width:0;box-shadow:0 0 0 1px var(--fg);vertical-align:-1px;margin-right:6px}
+.glass[aria-pressed="true"] .dot{box-shadow:0 0 0 2px var(--fg),0 0 0 6px var(--accent)}
+.gname{font-weight:600;font-size:15px}
+.cn{white-space:nowrap}
+.revtbl .rev{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.qrbox{display:grid;justify-items:center;gap:12px;text-align:center}
+.qrbox svg{width:min(78vw,340px);height:auto;border-radius:12px;border:1px solid var(--line)}
+.linkbox{font-family:var(--f-mono);font-size:12px;word-break:break-all;color:var(--muted);user-select:all}
+.stat{display:inline-flex;align-items:center;gap:8px;font-weight:600}
+.pulse{width:10px;height:10px;border-radius:50%;background:var(--warn)}
+.pulse.ok{background:var(--ok)}
+</style></head><body>
+<div id="app"></div>
+<div id="toast" role="status" aria-live="polite"></div>
+
+<script src="config.js"></script>
+<script>
+
+/* ===== core: statistiques, plans de test, analyse (fonctions pures) ===== */
+const Z95 = 1.959964;
+const _lf = [0];
+function logFact(n){ while (_lf.length <= n) _lf.push(_lf[_lf.length - 1] + Math.log(_lf.length)); return _lf[n]; }
+function logChoose(n, k){ return logFact(n) - logFact(k) - logFact(n - k); }
+function binomPmf(k, n, p){
+  if (k < 0 || k > n) return 0;
+  if (p <= 0) return k === 0 ? 1 : 0;
+  if (p >= 1) return k === n ? 1 : 0;
+  return Math.exp(logChoose(n, k) + k * Math.log(p) + (n - k) * Math.log(1 - p));
+}
+function binomUpper(k, n, p){ if (k <= 0) return 1; if (k > n) return 0; let s = 0; for (let i = k; i <= n; i++) s += binomPmf(i, n, p); return Math.min(1, s); }
+function binomTwoSided(k, n, p){
+  if (n === 0) return 1;
+  const pk = binomPmf(k, n, p); let s = 0;
+  for (let i = 0; i <= n; i++){ const q = binomPmf(i, n, p); if (q <= pk * (1 + 1e-9)) s += q; }
+  return Math.min(1, s);
+}
+function wilson(k, n){
+  if (!n) return [0, 1];
+  const z = Z95, p = k / n, d = 1 + z * z / n, c = (p + z * z / (2 * n)) / d;
+  const h = z * Math.sqrt(p * (1 - p) / n + z * z / (4 * n * n)) / d;
+  return [Math.max(0, c - h), Math.min(1, c + h)];
+}
+function fisher(a, b, c, d){
+  const r1 = a + b, r2 = c + d, c1 = a + c, n = r1 + r2;
+  if (!r1 || !r2) return 1;
+  const lo = Math.max(0, c1 - r2), hi = Math.min(r1, c1);
+  const lp = x => logChoose(r1, x) + logChoose(r2, c1 - x) - logChoose(n, c1);
+  const p0 = Math.exp(lp(a)); let s = 0;
+  for (let x = lo; x <= hi; x++){ const q = Math.exp(lp(x)); if (q <= p0 * (1 + 1e-9)) s += q; }
+  return Math.min(1, s);
+}
+function critK(n, p0, alpha){ let s = 0; for (let k = n; k >= 0; k--){ s += binomPmf(k, n, p0); if (s > alpha) return k + 1; } return 0; }
+function sampleSize(p0, p1, alpha, power, nmax){
+  nmax = nmax || 400;
+  const pw = [];
+  for (let n = 5; n <= nmax; n++) pw[n] = binomUpper(critK(n, p0, alpha), n, p1);
+  for (let n = 5; n <= nmax - 10; n++){
+    let ok = true;
+    for (let m = n; m <= n + 10; m++) if (pw[m] < power){ ok = false; break; }
+    if (ok) return n;
+  }
+  return null;
+}
+function tCrit95(df){
+  if (df < 1) return NaN;
+  const z = Z95, z3 = z ** 3, z5 = z ** 5, z7 = z ** 7;
+  return z + (z3 + z) / (4 * df) + (5 * z5 + 16 * z3 + 3 * z) / (96 * df ** 2) + (3 * z7 + 19 * z5 + 17 * z3 - 15 * z) / (384 * df ** 3);
+}
+const mean = a => a.reduce((s, x) => s + x, 0) / a.length;
+function sd(a){ if (a.length < 2) return 0; const m = mean(a); return Math.sqrt(a.reduce((s, x) => s + (x - m) ** 2, 0) / (a.length - 1)); }
+function quantile(a, q){
+  if (!a.length) return null;
+  const s = a.slice().sort((x, y) => x - y), pos = (s.length - 1) * q, lo = Math.floor(pos), hi = Math.ceil(pos);
+  return s[lo] + (s[hi] - s[lo]) * (pos - lo);
+}
+
+/* --- aléa reproductible pour équilibrer les plans --- */
+function xmur3(str){
+  let h = 1779033703 ^ str.length;
+  for (let i = 0; i < str.length; i++){ h = Math.imul(h ^ str.charCodeAt(i), 3432918353); h = h << 13 | h >>> 19; }
+  return function(){ h = Math.imul(h ^ h >>> 16, 2246822507); h = Math.imul(h ^ h >>> 13, 3266489909); return (h ^= h >>> 16) >>> 0; };
+}
+function mulberry32(a){
+  return function(){ a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; };
+}
+function rngFrom(str){ return mulberry32(xmur3(str)()); }
+function shuffleSeeded(arr, seed){
+  const r = rngFrom(seed), a = arr.slice();
+  for (let i = a.length - 1; i > 0; i--){ const j = Math.floor(r() * (i + 1)); const t = a[i]; a[i] = a[j]; a[j] = t; }
+  return a;
+}
+function rand01(){
+  if (typeof crypto !== 'undefined' && crypto.getRandomValues){ const a = new Uint32Array(1); crypto.getRandomValues(a); return a[0] / 4294967296; }
+  return Math.random();
+}
+const COLORS = ['vert', 'jaune', 'rouge', 'orange', 'bleu'];
+function distinctCodes(n){
+  const a = COLORS.slice();
+  for (let i = a.length - 1; i > 0; i--){ const j = Math.floor(rand01() * (i + 1)); const t = a[i]; a[i] = a[j]; a[j] = t; }
+  return a.slice(0, n);
+}
+
+/* --- libellés --- */
+const SEGS = [
+  ['sommelier', 'Sommelier, professionnel du vin'],
+  ['expert', 'Expert (caviste, œnologue, critique)'],
+  ['enthusiast', 'Amateur passionné'],
+  ['consumer', 'Consommateur occasionnel'],
+  ['non', "Ne boit pas ou n'aime pas le vin"]
+];
+const WINE_TYPES = ['Rouge', 'Blanc', 'Rosé', 'Effervescent', 'Autre'];
+const AGES = ['18-24', '25-34', '35-49', '50-64', '65+'];
+const FREQS = [['rare', 'Jamais ou rarement'], ['occasional', '1 à 3 fois par mois'], ['weekly', 'Chaque semaine'], ['frequent', 'Presque tous les jours']];
+const CONF = [['guess', 'Je devine'], ['fairly', 'Plutôt sûr·e'], ['sure', 'Très sûr·e']];
+const STRENGTH = [['slight', 'Légèrement'], ['clear', 'Nettement'], ['strong', 'Beaucoup']];
+const DIFFQ = [['clear', 'Oui, nettement'], ['slight', 'Oui, légèrement'], ['none', 'Je n’en perçois aucune']];
+const REUSE = [['sure', 'Oui, sûrement'], ['probably', 'Probablement'], ['unlikely', 'Probablement pas'], ['no', 'Non']];
+const GIFT = [['yes', 'Oui'], ['maybe', 'Peut-être'], ['no', 'Non']];
+const ATTRS = [
+  ['attaque', 'Attaque en bouche'], ['texture', 'Texture, rondeur'], ['tanins', 'Tanins, astringence'],
+  ['acidite', 'Acidité, fraîcheur'], ['aromes', 'Arômes'], ['longueur', 'Longueur en bouche'],
+  ['equilibre', 'Équilibre global'], ['douceur', 'Douceur, moins d’agressivité'], ['alcool', 'Chaleur, alcool'], ['visuel', 'Aspect visuel'],
+  ['autre', 'Autre'], ['nsp', 'Je ne sais pas dire']
+];
+const lab = (list, k) => { const f = list.find(x => x[0] === k); return f ? f[1] : (k == null ? '' : k); };
+
+/* --- plan de test --- */
+const TRI_DESIGNS = ['TTU', 'TUT', 'UTT', 'UUT', 'UTU', 'TUU'];
+function oddIndex(s){
+  const t = [...s].filter(c => c === 'T').length;
+  return s.indexOf(t === 1 ? 'T' : 'U');
+}
+function makeAssignment(existing, cfg){
+  const key = 'tg|' + cfg.session, k = existing.length;
+  let arm = 'test';
+  if (cfg.share > 0){
+    const bs = cfg.share;
+    const blk = shuffleSeeded(['C'].concat(Array(bs - 1).fill('T')), key + '|arm|' + Math.floor(k / bs));
+    arm = blk[k % bs] === 'C' ? 'control' : 'test';
+  }
+  const m = existing.filter(r => r.arm === arm).length;
+  const tri = shuffleSeeded(TRI_DESIGNS, key + '|tri|' + arm + '|' + Math.floor(m / 6))[m % 6];
+  const pref = shuffleSeeded(['TU', 'UT'], key + '|pref|' + arm + '|' + Math.floor(m / 2))[m % 2];
+  const codes = distinctCodes(5);
+  return {
+    arm,
+    tri: { samples: tri, codes: codes.slice(0, 3), odd: oddIndex(tri), pick: null, conf: null, attrs: [] },
+    pref: { samples: pref, codes: codes.slice(3, 5), pick: null, strength: null, scores: [null, null], diff: null, soft: null }
+  };
+}
+function nextPid(existing){
+  let mx = 0;
+  existing.forEach(r => { const m = /^P(\d+)$/.exec(r.pid || ''); if (m) mx = Math.max(mx, +m[1]); });
+  return 'P' + String(mx + 1).padStart(2, '0');
+}
+
+/* --- lecture d'un enregistrement --- */
+const triCorrect = r => !!(r.tri && r.tri.pick != null && r.tri.pick === r.tri.odd);
+const prefPickedT = r => !!(r.pref && r.pref.pick != null && r.pref.samples[r.pref.pick] === 'T');
+const softPickedT = r => !!(r.pref && r.pref.soft != null && r.pref.samples[r.pref.soft] === 'T');
+const curOf = r => (r.post && r.post.cur) || 'EUR';
+function prefScores(r){
+  const sc = r.pref.scores || [], iT = r.pref.samples.indexOf('T'), iU = r.pref.samples.indexOf('U');
+  return { t: sc[iT], u: sc[iU] };
+}
+
+/* --- analyse --- */
+function mkRate(k, n){ const w = wilson(k, n); return { k, n, r: n ? k / n : null, lo: w[0], hi: w[1] }; }
+function filterRecords(all, f){
+  let recs = all.filter(r => r.status === 'complete');
+  if (f.session && f.session !== 'all') recs = recs.filter(r => r.session === f.session);
+  if (f.type && f.type !== 'all') recs = recs.filter(r => r.wine && r.wine.type === f.type);
+  if (f.first){
+    const seen = {};
+    recs = recs.slice().sort((a, b) => (a.round || 1) - (b.round || 1) || (a.completedAt || '').localeCompare(b.completedAt || ''))
+      .filter(r => { const k = r.session + '|' + r.pid; if (seen[k]) return false; seen[k] = 1; return true; });
+  }
+  return recs;
+}
+function detRate(list){
+  const ok = list.filter(r => r.tri && r.tri.pick != null);
+  const k = ok.filter(triCorrect).length, o = mkRate(k, ok.length);
+  o.p = ok.length ? binomUpper(k, ok.length, 1 / 3) : null;
+  o.pd = o.r == null ? null : Math.max(0, (o.r - 1 / 3) / (2 / 3));
+  o.pdLo = Math.max(0, (o.lo - 1 / 3) / (2 / 3)); o.pdHi = Math.max(0, (o.hi - 1 / 3) / (2 / 3));
+  return o;
+}
+function prefRate(list){
+  const ok = list.filter(r => r.pref && r.pref.pick != null);
+  const k = ok.filter(prefPickedT).length, o = mkRate(k, ok.length);
+  o.p = ok.length ? binomTwoSided(k, ok.length, 0.5) : null;
+  return o;
+}
+function softRate(list){
+  const ok = list.filter(r => r.pref && r.pref.soft != null);
+  const k = ok.filter(softPickedT).length, o = mkRate(k, ok.length);
+  o.p = ok.length ? binomTwoSided(k, ok.length, 0.5) : null;
+  return o;
+}
+function hedonic(list){
+  const d = [], t = [], u = [];
+  list.forEach(r => { if (!r.pref) return; const s = prefScores(r); if (typeof s.t === 'number' && typeof s.u === 'number'){ t.push(s.t); u.push(s.u); d.push(s.t - s.u); } });
+  if (!d.length) return { n: 0 };
+  const m = mean(d), s = sd(d), n = d.length;
+  const h = n > 1 ? tCrit95(n - 1) * s / Math.sqrt(n) : null;
+  return { n, mT: mean(t), mU: mean(u), d: m, lo: h == null ? null : m - h, hi: h == null ? null : m + h };
+}
+const LADDERS = { EUR: [10, 20, 30, 40, 50, 75, 100, 150], USD: [10, 20, 30, 40, 50, 75, 100, 150], GBP: [10, 20, 30, 40, 50, 75, 100, 150], HKD: [100, 150, 200, 300, 400, 600, 800, 1200] };
+const CURRENCIES = ['EUR', 'HKD', 'USD', 'GBP'];
+function analyze(all, f){
+  const recs = filterRecords(all, f || {});
+  const T = recs.filter(r => r.arm === 'test'), C = recs.filter(r => r.arm === 'control');
+  const out = { n: recs.length, nT: T.length, nC: C.length };
+  out.participants = new Set(recs.map(r => r.session + '|' + r.pid)).size;
+  out.det = { T: detRate(T), C: detRate(C) };
+  out.detDiff = (out.det.T.n && out.det.C.n) ? fisher(out.det.T.k, out.det.T.n - out.det.T.k, out.det.C.k, out.det.C.n - out.det.C.k) : null;
+  out.pref = { T: prefRate(T), C: prefRate(C) };
+  out.soft = { T: softRate(T), C: softRate(C) };
+  const det = T.filter(r => r.tri && r.tri.pick != null && triCorrect(r));
+  out.prefAmongDet = prefRate(det);
+  const claim = list => { const ok = list.filter(r => r.pref && r.pref.diff); return mkRate(ok.filter(r => r.pref.diff !== 'none').length, ok.length); };
+  out.claim = { T: claim(T), C: claim(C) };
+  out.claimDiff = (out.claim.T.n && out.claim.C.n) ? fisher(out.claim.T.k, out.claim.T.n - out.claim.T.k, out.claim.C.k, out.claim.C.n - out.claim.C.k) : null;
+  out.hed = { T: hedonic(T), C: hedonic(C) };
+  const postAll = T.filter(r => r.post);
+  const cc = {}; postAll.forEach(r => { const c = curOf(r); cc[c] = (cc[c] || 0) + 1; });
+  out.curs = Object.keys(cc).sort((a, b) => cc[b] - cc[a]);
+  const rates = f && f.rates;
+  const toEur = r => curOf(r) === 'EUR' ? 1 : (rates && rates[curOf(r)] > 0 ? rates[curOf(r)] : null);
+  const cur = rates ? 'EUR' : ((f && f.cur && cc[f.cur]) ? f.cur : (out.curs[0] || 'EUR'));
+  out.cur = cur; out.converted = !!rates;
+  const val = r => { if (!rates) return curOf(r) === cur ? r.post.wtp : null; const k = toEur(r); return k == null ? null : r.post.wtp * k; };
+  const post = postAll;
+  const postC = postAll.filter(r => val(r) != null);
+  const LADDER = LADDERS[cur] || LADDERS.EUR;
+  const dist = (list, key, keys) => { const o = {}; keys.forEach(k => o[k] = 0); list.forEach(r => { const v = r.post[key]; if (v in o) o[v]++; }); return o; };
+  const reuseList = post.filter(r => r.post.reuse);
+  out.reuse = { n: reuseList.length, top2: mkRate(reuseList.filter(r => r.post.reuse === 'sure' || r.post.reuse === 'probably').length, reuseList.length), dist: dist(reuseList, 'reuse', REUSE.map(x => x[0])) };
+  const giftList = post.filter(r => r.post.gift);
+  out.gift = { n: giftList.length, yes: mkRate(giftList.filter(r => r.post.gift === 'yes').length, giftList.length), dist: dist(giftList, 'gift', GIFT.map(x => x[0])) };
+  const curList = post.filter(r => typeof r.post.curious === 'number');
+  const curNon = curList.filter(r => r.profile && r.profile.seg === 'non');
+  out.curious = { n: curList.length, top2: mkRate(curList.filter(r => r.post.curious >= 4).length, curList.length), non: mkRate(curNon.filter(r => r.post.curious >= 4).length, curNon.length) };
+  const w = postC.map(val).filter(v => typeof v === 'number' && isFinite(v) && v >= 0);
+  out.wtp = { n: w.length };
+  if (w.length){
+    out.wtp.median = quantile(w, .5); out.wtp.mean = mean(w); out.wtp.q1 = quantile(w, .25); out.wtp.q3 = quantile(w, .75);
+    out.wtp.min = Math.min.apply(null, w); out.wtp.max = Math.max.apply(null, w);
+    const top = LADDER.findIndex(t => t > out.wtp.max);
+    const used = top < 0 ? LADDER : LADDER.slice(0, top + 1);
+    out.wtp.ladder = used.map(t => ({ t, k: w.filter(v => v >= t).length, share: w.filter(v => v >= t).length / w.length }));
+  }
+  const row = (list) => ({ n: list.length, det: detRate(list), pref: prefRate(list), wtp: (() => { const v = list.filter(r => r.post && typeof r.post.wtp === 'number' && val(r) != null).map(val); return v.length ? quantile(v, .5) : null; })() });
+  out.bySeg = SEGS.map(s => Object.assign({ key: s[0], label: s[1] }, row(T.filter(r => r.profile && r.profile.seg === s[0]))));
+  const types = WINE_TYPES.filter(t => T.some(r => r.wine && r.wine.type === t));
+  out.byType = types.map(t => Object.assign({ key: t, label: t }, row(T.filter(r => r.wine && r.wine.type === t))));
+  const nDet = det.length;
+  out.attrs = { nDet, list: ATTRS.map(a => { const k = det.filter(r => (r.tri.attrs || []).includes(a[0])).length; return { key: a[0], label: a[1], k, share: nDet ? k / nDet : 0 }; }) };
+  const vis = list => { const ok = list.filter(r => r.tri && r.tri.pick != null); return mkRate(ok.filter(r => (r.tri.attrs || []).includes('visuel')).length, ok.length); };
+  out.vis = { T: vis(T), C: vis(C) };
+  out.sessions = Array.from(new Set(all.filter(r => r.status === 'complete').map(r => r.session))).sort();
+  return out;
+}
+function verdict(p, n){
+  if (!n) return { tone: 'none', label: 'Aucune donnée' };
+  if (p == null) return { tone: 'none', label: 'Aucune donnée' };
+  if (p < 0.05) return { tone: 'ok', label: n < 30 ? 'Concluant, à confirmer' : 'Concluant' };
+  if (p < 0.10) return { tone: 'warn', label: 'Tendance' };
+  return { tone: 'neutral', label: 'Pas encore concluant' };
+}
+
+/* --- effectifs recommandés --- */
+const P0_TRI = 1 / 3;
+const needTri = pd => sampleSize(P0_TRI, P0_TRI + (2 / 3) * pd, 0.05, 0.8, 400);
+const needPref = p1 => sampleSize(0.5, p1, 0.025, 0.8, 400);
+
+/* --- export CSV --- */
+function csvCell(v){
+  if (v == null) return '';
+  const s = Array.isArray(v) ? v.join('|') : String(v);
+  return /[;"\n\r]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
+}
+function toCsv(recs){
+  const head = ['id', 'session', 'participant', 'manche', 'date', 'statut', 'bras', 'vin', 'type_vin', 'profil', 'age', 'frequence', 'aime_le_vin_1a5',
+    'tri_echantillons', 'tri_codes', 'tri_position_impair', 'tri_choix_position', 'tri_correct', 'tri_confiance', 'tri_attributs',
+    'pref_echantillons', 'pref_codes', 'pref_choix_position', 'pref_choix_traite', 'pref_force', 'note_traite', 'note_non_traite', 'difference_percue', 'plus_doux_traite',
+    'reutilisation', 'prix_max', 'devise', 'cadeau', 'envie_autres_vins_1a5', 'commentaire', 'duree_s', 'langue'];
+  const rows = recs.map(r => {
+    const t = r.tri || {}, p = r.pref || {}, po = r.post || {}, pr = r.profile || {};
+    const sc = (p.samples && p.scores) ? prefScores(r) : {};
+    return [r.id, r.session, r.pid, r.round, r.completedAt || r.createdAt, r.status, r.arm, r.wine && r.wine.name, r.wine && r.wine.type, pr.seg, pr.age, pr.freq, pr.like,
+      t.samples, t.codes, t.odd != null ? t.odd + 1 : '', t.pick != null ? t.pick + 1 : '', t.pick != null ? (triCorrect(r) ? 1 : 0) : '', t.conf, t.attrs,
+      p.samples, p.codes, p.pick != null ? p.pick + 1 : '', p.pick != null ? (prefPickedT(r) ? 1 : 0) : '', p.strength, sc.t, sc.u, p.diff, p.soft != null ? (softPickedT(r) ? 1 : 0) : '',
+      po.reuse, po.wtp, po.wtp != null ? curOf(r) : '', po.gift, po.curious, po.comment, r.duration, r.lang || 'fr'].map(csvCell).join(';');
+  });
+  return '﻿' + head.join(';') + '\n' + rows.join('\n');
+}
+
+function toContactsCsv(list){
+  const rows = list.map(c => [c.email, c.lang, c.session, c.createdAt, c.consent].map(csvCell).join(';'));
+  return '﻿' + ['email', 'langue', 'session', 'date', 'consentement'].join(';') + '\n' + rows.join('\n');
+}
+
+/* --- jeu d'exemple (jamais enregistré) --- */
+function demoRecords(){
+  const r = rngFrom('demo-two-glass-v1'), out = [];
+  const pick = list => { let x = r(), s = 0; for (const [v, w] of list){ s += w; if (x <= s) return v; } return list[list.length - 1][0]; };
+  const pdBySeg = { sommelier: 0.34, expert: 0.30, enthusiast: 0.26, consumer: 0.20, non: 0.14 };
+  for (let i = 0; i < 70; i++){
+    const arm = i % 5 === 4 ? 'control' : 'test';
+    const seg = pick([['sommelier', .1], ['expert', .12], ['enthusiast', .26], ['consumer', .3], ['non', .22]]);
+    const type = pick([['Rouge', .45], ['Blanc', .35], ['Rosé', .1], ['Effervescent', .1]]);
+    const samples = TRI_DESIGNS[i % 6], odd = oddIndex(samples);
+    const pc = arm === 'test' ? 1 / 3 + (2 / 3) * pdBySeg[seg] : 1 / 3;
+    const ok = r() < pc;
+    const others = [0, 1, 2].filter(x => x !== odd);
+    const pickTri = ok ? odd : others[Math.floor(r() * 2)];
+    const ps = i % 2 ? 'TU' : 'UT';
+    const likesT = r() < (arm === 'test' ? 0.62 : 0.5);
+    const iT = ps.indexOf('T'), iU = ps.indexOf('U');
+    const pickPref = likesT ? iT : iU;
+    const base = 3.6 + r() * 1.8, bonus = arm === 'test' ? 0.45 : 0;
+    const sT = Math.max(1, Math.min(7, Math.round(base + bonus + (r() - .5) * 1.6)));
+    const sU = Math.max(1, Math.min(7, Math.round(base + (r() - .5) * 1.6)));
+    const scores = [null, null]; scores[iT] = sT; scores[iU] = sU;
+    const x = r();
+    const diff = arm === 'test' ? (x < .32 ? 'clear' : x < .66 ? 'slight' : 'none') : (x < .08 ? 'clear' : x < .33 ? 'slight' : 'none');
+    const attrs = []; if (ok){ ['texture', 'attaque', 'aromes', 'acidite', 'equilibre', 'longueur', 'tanins'].forEach(a => { if (r() < .28) attrs.push(a); }); if (r() < .06) attrs.push('visuel'); if (!attrs.length) attrs.push('nsp'); }
+    const rec = {
+      id: 'demo' + i, demo: true, session: 'Exemple simulé', pid: 'P' + String(i + 1).padStart(2, '0'), round: 1, status: 'complete',
+      createdAt: '2026-10-08T18:00:00.000Z', completedAt: '2026-10-08T18:' + String(10 + (i % 50)).padStart(2, '0') + ':00.000Z',
+      arm, wine: { name: 'Vin exemple ' + (1 + (i % 3)), type },
+      profile: { seg, age: AGES[Math.floor(r() * 5)], freq: 'occasional', like: seg === 'non' ? 1 + Math.floor(r() * 2) : 3 + Math.floor(r() * 3) },
+      tri: { samples, codes: ['vert', 'rouge', 'bleu'], odd, pick: pickTri, conf: ok ? 'fairly' : 'guess', attrs },
+      pref: { samples: ps, codes: ['jaune', 'orange'], pick: pickPref, strength: 'clear', scores, diff, soft: (r() < (arm === 'test' ? 0.64 : 0.5)) ? iT : iU }, duration: 240
+    };
+    if (arm === 'test'){
+      const y = r();
+      rec.post = {
+        reuse: y < .26 ? 'sure' : y < .62 ? 'probably' : y < .86 ? 'unlikely' : 'no',
+        wtp: Math.max(0, Math.round(Math.exp(Math.log(32) + (r() - .5) * 1.5) / 5) * 5),
+        gift: r() < .45 ? 'yes' : r() < .6 ? 'maybe' : 'no',
+        curious: 1 + Math.min(4, Math.floor(r() * (seg === 'non' ? 5 : 5.6)))
+      };
+    }
+    out.push(rec);
+  }
+  return out;
+}
+
+if (typeof module !== 'undefined') module.exports = { toContactsCsv, softRate, binomUpper, binomTwoSided, wilson, fisher, sampleSize, critK, tCrit95, makeAssignment, analyze, demoRecords, toCsv, oddIndex, needTri, needPref, verdict, quantile, nextPid, TRI_DESIGNS };
+
+/* ---------- textes du parcours participant : fr / en / zh (繁體, Hong Kong) ---------- */
+const LANGS = [['fr', 'Français'], ['en', 'English'], ['zh', '繁體中文']];
+const HTML_LANG = { fr: 'fr', en: 'en', zh: 'zh-HK' };
+const CUR_SYM = { EUR: '€', HKD: 'HK$', USD: 'US$', GBP: '£' };
+const TX = {
+  fr: {
+    col: { vert: 'vert', jaune: 'jaune', rouge: 'rouge', orange: 'orange', bleu: 'bleu' }, brand: 'Test de dégustation', stepOf: (i, n) => 'Étape ' + i + ' sur ' + n, done: 'Terminé', gl: n => 'Verre ' + n, pos2: ['à gauche', 'à droite'], pos3: ['à gauche', 'au milieu', 'à droite'],
+    cont: 'Continuer',
+    w_h: 'Test de dégustation à l’aveugle',
+    w_p: 'Vous allez goûter plusieurs verres du même vin. Il n’y a ni bonne ni mauvaise réponse : seule votre impression compte.',
+    w_l: ['Partie 1 : trois verres, un seul est différent.', 'Partie 2 : deux verres, lequel préférez-vous ?', 'Quelques questions rapides.'],
+    w_f: 'Environ 5 minutes. Test anonyme, réservé aux personnes majeures. Vous pouvez recracher et boire de l’eau entre les verres. Pour fiabiliser les résultats, certaines séries sont des séries de contrôle.',
+    w_b: 'Je suis majeur·e, je commence',
+    pf_h: 'Votre profil', pf_seg: 'Votre rapport au vin', pf_age: 'Votre âge', pf_freq: 'Vous buvez du vin', pf_like: 'Aimez-vous le vin en général ?', lo5: 'Pas du tout', hi5: 'Beaucoup',
+    t_h: 'Partie 1 · Trois verres', t_p: 'Goûtez de gauche à droite. <b>Deux verres sont identiques, un est différent.</b> Lequel est différent ?', t_hint: 'Choisissez-en un, même si vous hésitez.',
+    t_conf: 'Confiance dans votre choix', t_attr: 'Si vous percevez une différence, qu’est-ce qui change ?', opt: '(facultatif)', t_b: 'Valider la partie 1',
+    x_h: 'Partie 2 · Deux nouveaux verres', x_p: 'Patientez : l’animateur sert deux nouveaux verres. Buvez un peu d’eau en attendant.', x_b: 'Les verres sont servis',
+    p_h: 'Partie 2 · Deux verres', p_p: 'Goûtez les deux verres. <b>Lequel préférez-vous ?</b>', p_hint: 'Choisissez-en un, même si la différence est faible.',
+    p_str: 'Votre préférence est', p_note: c => 'Note du verre ' + c, p_lo: 'Je n’aime pas', p_hi: 'J’adore', p_diff: 'Percevez-vous une différence entre ces deux verres ?',
+    p_soft: 'Quel verre vous semble le plus doux en bouche, le moins agressif (moins de chaleur de l’alcool) ?', p_softhint: 'Choisissez-en un, même si la différence est faible.', p_b: 'Valider la partie 2',
+    c_h: 'Série de contrôle', c_p1: 'Dans cette série, <b>tous les verres étaient identiques</b> : aucun n’avait été traité.', c_p2: 'Ces séries servent à mesurer la part d’impressions liée à la suggestion. Vos réponses restent précieuses : elles permettent de distinguer ce qui relève du vin de ce qui relève de l’attente.',
+    r_h: 'La révélation', r_1: 'Partie 1', r_with: 'Avec le dispositif', r_without: 'Sans le dispositif', r_yours: 'votre choix',
+    r_odd: (c, f) => 'Le verre différent était le verre <b>' + c + '</b>. ' + (f ? 'Vous l’avez trouvé.' : 'Vous ne l’avez pas désigné cette fois.'),
+    r_2: 'Partie 2', r_pref: (c, l) => 'Le verre <b>' + c + '</b> avait été préparé avec le dispositif. Vous avez préféré le verre <b>' + (l ? 'avec' : 'sans') + '</b> le dispositif.', r_b: 'Dernières questions',
+    o_h: 'Votre avis sur le dispositif', o_reuse: 'L’utiliseriez-vous sur votre prochaine bouteille ?',
+    o_wtp: cur => 'Quel prix maximum paieriez-vous pour ce dispositif, avec son guide de dégustation ? (en ' + cur + ')', o_wtp_ph: '0 si vous ne l’achèteriez pas',
+    o_gift: 'Seriez-vous tenté·e de l’offrir ?', o_cur: 'Cette expérience vous donne-t-elle envie de goûter d’autres vins ?', o_com: 'Un commentaire ?',
+    k_h: 'Rester informé·e ?', k_p: 'Si vous souhaitez être prévenu·e quand le dispositif sera disponible, laissez votre adresse e-mail. C’est facultatif : vous pouvez passer cette étape.',
+    k_mail: 'Votre adresse e-mail', k_bad: 'Cette adresse ne semble pas valide.',
+    k_cons: org => 'J’accepte que ' + org + ' conserve mon adresse e-mail pour me prévenir de la disponibilité du dispositif. Mon adresse n’est pas rattachée à mes réponses au test. Je peux demander sa suppression à tout moment auprès de l’animateur.',
+    k_need: 'Cochez la case de consentement pour valider votre adresse.', k_b: 'Envoyer mes réponses',
+    th_save: 'Enregistrement…', th_h: 'Merci !', th_p: 'Vos réponses sont enregistrées. Vous pouvez fermer cette page.', already: 'Ce questionnaire a déjà été rempli.', err: 'Connexion impossible. Vérifiez votre connexion Internet puis appuyez de nouveau sur le bouton.', th_local: 'Enregistré sur cet appareil seulement. La synchronisation se fera à la prochaine ouverture.', th_b: 'Retour à l’animateur',
+    o: {
+      seg: { sommelier: 'Sommelier, professionnel du vin', expert: 'Expert (caviste, œnologue, critique)', enthusiast: 'Amateur passionné', consumer: 'Consommateur occasionnel', non: 'Ne boit pas ou n’aime pas le vin' },
+      freq: { rare: 'Jamais ou rarement', occasional: '1 à 3 fois par mois', weekly: 'Chaque semaine', frequent: 'Presque tous les jours' },
+      conf: { guess: 'Je devine', fairly: 'Plutôt sûr·e', sure: 'Très sûr·e' },
+      strength: { slight: 'Légère', clear: 'Nette', strong: 'Forte' },
+      diff: { clear: 'Oui, nettement', slight: 'Oui, légèrement', none: 'Je n’en perçois aucune' },
+      reuse: { sure: 'Oui, sûrement', probably: 'Probablement', unlikely: 'Probablement pas', no: 'Non' },
+      gift: { yes: 'Oui', maybe: 'Peut-être', no: 'Non' },
+      attr: { attaque: 'Attaque en bouche', texture: 'Texture, rondeur', tanins: 'Tanins, astringence', acidite: 'Acidité, fraîcheur', aromes: 'Arômes', longueur: 'Longueur en bouche', equilibre: 'Équilibre global', douceur: 'Douceur, moins d’agressivité', alcool: 'Chaleur, alcool', visuel: 'Aspect visuel', autre: 'Autre', nsp: 'Je ne sais pas dire' }
+    }
+  },
+  en: {
+    col: { vert: 'green', jaune: 'yellow', rouge: 'red', orange: 'orange', bleu: 'blue' }, brand: 'Tasting test', stepOf: (i, n) => 'Step ' + i + ' of ' + n, done: 'Done', gl: n => n + ' glass', pos2: ['left', 'right'], pos3: ['left', 'middle', 'right'],
+    cont: 'Continue',
+    w_h: 'Blind tasting test',
+    w_p: 'You will taste several glasses of the same wine. There are no right or wrong answers: only your own impression counts.',
+    w_l: ['Part 1: three glasses, only one is different.', 'Part 2: two glasses, which do you prefer?', 'A few quick questions.'],
+    w_f: 'About 5 minutes. Anonymous test, for adults only. You may spit and drink water between glasses. To make the results reliable, some rounds are control rounds.',
+    w_b: 'I am of legal drinking age, let’s start',
+    pf_h: 'Your profile', pf_seg: 'Your relationship with wine', pf_age: 'Your age', pf_freq: 'You drink wine', pf_like: 'Do you like wine in general?', lo5: 'Not at all', hi5: 'Very much',
+    t_h: 'Part 1 · Three glasses', t_p: 'Taste from left to right. <b>Two glasses are identical, one is different.</b> Which one is different?', t_hint: 'Pick one, even if you are unsure.',
+    t_conf: 'How confident are you in your choice?', t_attr: 'If you notice a difference, what changes?', opt: '(optional)', t_b: 'Confirm part 1',
+    x_h: 'Part 2 · Two new glasses', x_p: 'Please wait: the host is pouring two new glasses. Have a little water in the meantime.', x_b: 'The glasses are served',
+    p_h: 'Part 2 · Two glasses', p_p: 'Taste both glasses. <b>Which one do you prefer?</b>', p_hint: 'Pick one, even if the difference is small.',
+    p_str: 'Your preference is', p_note: c => 'Score for the ' + c + ' glass', p_lo: 'Dislike', p_hi: 'Love it', p_diff: 'Do you notice a difference between these two glasses?',
+    p_soft: 'Which glass feels smoother in the mouth, less aggressive (less alcohol heat)?', p_softhint: 'Pick one, even if the difference is small.', p_b: 'Confirm part 2',
+    c_h: 'Control round', c_p1: 'In this round, <b>all the glasses were identical</b>: none had been treated.', c_p2: 'These rounds measure how much of what people perceive comes from suggestion. Your answers are still valuable: they help separate what comes from the wine from what comes from expectation.',
+    r_h: 'The reveal', r_1: 'Part 1', r_with: 'With the device', r_without: 'Without the device', r_yours: 'your choice',
+    r_odd: (c, f) => 'The different glass was the <b>' + c + '</b> one. ' + (f ? 'You found it.' : 'You did not pick it this time.'),
+    r_2: 'Part 2', r_pref: (c, l) => 'The <b>' + c + '</b> glass had been prepared with the device. You preferred the glass <b>' + (l ? 'with' : 'without') + '</b> the device.', r_b: 'Last questions',
+    o_h: 'Your view on the device', o_reuse: 'Would you use it on your next bottle?',
+    o_wtp: cur => 'What is the most you would pay for this device, with its tasting guide? (in ' + cur + ')', o_wtp_ph: '0 if you would not buy it',
+    o_gift: 'Would you be tempted to give it as a gift?', o_cur: 'Does this experience make you want to try other wines?', o_com: 'Any comment?',
+    k_h: 'Stay informed?', k_p: 'If you would like to hear when the device becomes available, leave your email address. This is optional: you can skip this step.',
+    k_mail: 'Your email address', k_bad: 'This address does not look valid.',
+    k_cons: org => 'I agree that ' + org + ' keeps my email address to let me know when the device becomes available. My address is not linked to my test answers. I can ask for it to be deleted at any time through the host.',
+    k_need: 'Tick the consent box to confirm your address.', k_b: 'Submit my answers',
+    th_save: 'Saving…', th_h: 'Thank you!', th_p: 'Your answers are saved. You can close this page.', already: 'This questionnaire has already been completed.', err: 'Cannot connect. Please check your internet connection and press the button again.', th_local: 'Saved on this device only. It will sync the next time the page is opened.', th_b: 'Back to the host',
+    o: {
+      seg: { sommelier: 'Sommelier, wine professional', expert: 'Expert (wine merchant, winemaker, critic)', enthusiast: 'Keen enthusiast', consumer: 'Occasional drinker', non: 'Do not drink or dislike wine' },
+      freq: { rare: 'Never or rarely', occasional: '1 to 3 times a month', weekly: 'Every week', frequent: 'Almost every day' },
+      conf: { guess: 'I am guessing', fairly: 'Fairly sure', sure: 'Very sure' },
+      strength: { slight: 'Slight', clear: 'Clear', strong: 'Strong' },
+      diff: { clear: 'Yes, clearly', slight: 'Yes, slightly', none: 'I notice none' },
+      reuse: { sure: 'Yes, definitely', probably: 'Probably', unlikely: 'Probably not', no: 'No' },
+      gift: { yes: 'Yes', maybe: 'Maybe', no: 'No' },
+      attr: { attaque: 'First impact on the palate', texture: 'Texture, roundness', tanins: 'Tannins, astringency', acidite: 'Acidity, freshness', aromes: 'Aromas', longueur: 'Length', equilibre: 'Overall balance', douceur: 'Smoothness, less aggressive', alcool: 'Alcohol heat', visuel: 'Appearance', autre: 'Other', nsp: 'Cannot say' }
+    }
+  },
+  zh: {
+    col: { vert: '綠色', jaune: '黃色', rouge: '紅色', orange: '橙色', bleu: '藍色' }, brand: '品飲測試', stepOf: (i, n) => '第 ' + i + ' 步，共 ' + n + ' 步', done: '完成', gl: n => n + '酒杯', pos2: ['左邊', '右邊'], pos3: ['左邊', '中間', '右邊'],
+    cont: '繼續',
+    w_h: '盲測品飲',
+    w_p: '您將品嚐數杯同一款葡萄酒。答案沒有對錯，只需如實說出您的感受。',
+    w_l: ['第一部分：三杯酒，其中一杯不同。', '第二部分：兩杯酒，您較喜歡哪一杯？', '幾條簡短問題。'],
+    w_f: '約需 5 分鐘。匿名測試，僅限成年人參加。每杯之間可以吐酒及飲水。為確保結果可靠，部分場次為對照組。',
+    w_b: '我已成年，開始測試',
+    pf_h: '您的背景', pf_seg: '您與葡萄酒的關係', pf_age: '您的年齡', pf_freq: '您飲葡萄酒的頻率', pf_like: '整體而言，您喜歡葡萄酒嗎？', lo5: '完全不喜歡', hi5: '非常喜歡',
+    t_h: '第一部分 · 三杯酒', t_p: '請由左至右品嚐。<b>其中兩杯相同，一杯不同。</b>哪一杯不同？', t_hint: '即使不太肯定，也請選一杯。',
+    t_conf: '您對這個選擇有多肯定？', t_attr: '如果您察覺到差異，是哪方面不同？', opt: '（選填）', t_b: '確認第一部分',
+    x_h: '第二部分 · 兩杯新酒', x_p: '請稍候：主持人正在斟兩杯新酒。期間可以飲點水。', x_b: '酒已送到',
+    p_h: '第二部分 · 兩杯酒', p_p: '請品嚐兩杯酒。<b>您較喜歡哪一杯？</b>', p_hint: '即使差異很小，也請選一杯。',
+    p_str: '您的偏好程度', p_note: c => c + '酒杯的評分', p_lo: '不喜歡', p_hi: '非常喜歡', p_diff: '您覺得這兩杯酒有分別嗎？',
+    p_soft: '哪一杯入口較柔順、較不刺激（酒精的灼熱感較低）？', p_softhint: '即使差異很小，也請選一杯。', p_b: '確認第二部分',
+    c_h: '對照組', c_p1: '這一輪的<b>所有酒杯都完全相同</b>，沒有任何一杯經過處理。', c_p2: '對照組用來衡量心理暗示所造成的感受。您的答案同樣很重要，能幫助我們分辨哪些來自酒本身，哪些來自期待。',
+    r_h: '揭曉', r_1: '第一部分', r_with: '使用了裝置', r_without: '沒有使用裝置', r_yours: '您的選擇',
+    r_odd: (c, f) => '不同的一杯是<b>' + c + '</b>酒杯。' + (f ? '您找對了。' : '這次您沒有選中。'),
+    r_2: '第二部分', r_pref: (c, l) => '<b>' + c + '</b>酒杯使用了裝置處理。您較喜歡<b>' + (l ? '使用' : '沒有使用') + '</b>裝置的那一杯。', r_b: '最後幾條問題',
+    o_h: '您對這個裝置的看法', o_reuse: '下一瓶酒您會使用它嗎？',
+    o_wtp: cur => '連同品飲指南，您最多願意為這個裝置付多少錢？（' + cur + '）', o_wtp_ph: '不會購買請填 0',
+    o_gift: '您會考慮把它送給別人嗎？', o_cur: '這次體驗是否令您想試其他葡萄酒？', o_com: '有任何意見嗎？',
+    k_h: '想收到最新消息嗎？', k_p: '如果您想在裝置推出時收到通知，請留下電郵地址。此項為選填，可直接略過。',
+    k_mail: '您的電郵地址', k_bad: '電郵地址格式似乎不正確。',
+    k_cons: org => '本人同意 ' + org + ' 保存我的電郵地址，以便在裝置推出時通知我。此電郵地址不會與我的測試答案連結。我可隨時向主持人要求刪除。',
+    k_need: '請剔選同意方格以確認您的電郵地址。', k_b: '提交我的答案',
+    th_save: '儲存中…', th_h: '多謝您！', th_p: '您的答案已儲存，可以關閉此頁面。', already: '此問卷已經填寫完成。', err: '無法連線。請檢查網絡連線，然後再按一次按鈕。', th_local: '只儲存於此裝置。下次開啟頁面時會同步。', th_b: '返回主持人',
+    o: {
+      seg: { sommelier: '侍酒師／葡萄酒專業人士', expert: '專家（酒商、釀酒師、酒評人）', enthusiast: '資深愛好者', consumer: '偶爾飲酒', non: '不飲酒或不喜歡葡萄酒' },
+      freq: { rare: '從不或很少', occasional: '每月 1 至 3 次', weekly: '每星期', frequent: '幾乎每天' },
+      conf: { guess: '憑猜測', fairly: '頗肯定', sure: '非常肯定' },
+      strength: { slight: '稍微', clear: '明顯', strong: '非常強烈' },
+      diff: { clear: '有，很明顯', slight: '有，稍微', none: '完全沒有分別' },
+      reuse: { sure: '一定會', probably: '可能會', unlikely: '可能不會', no: '不會' },
+      gift: { yes: '會', maybe: '或許', no: '不會' },
+      attr: { attaque: '入口第一印象', texture: '質感、圓潤度', tanins: '單寧、澀感', acidite: '酸度、清新感', aromes: '香氣', longueur: '餘韻長度', equilibre: '整體平衡', douceur: '柔順、較不刺激', alcool: '酒精灼熱感', visuel: '外觀', autre: '其他', nsp: '說不出來' }
+    }
+  }
+};
+const TXL = lang => TX[lang] || TX.fr;
+
+/* ---------- générateur de QR code (QRCode for JavaScript, Kazuhiko Arase, licence MIT) ---------- */
+const QRLIB = (function(){
+const defs = {};
+const cache = {};
+function req(n){ n = n.replace('./', ''); if (n === '') n = 'index'; if (cache[n]) return cache[n].exports; const m = { exports: {} }; cache[n] = m; defs[n](m, m.exports, req); return m.exports; }
+defs['QR8bitByte'] = function(module, exports, require){
+var QRMode = require('./QRMode');
+
+function QR8bitByte(data) {
+	this.mode = QRMode.MODE_8BIT_BYTE;
+	this.data = data;
+}
+
+QR8bitByte.prototype = {
+
+	getLength : function() {
+		return this.data.length;
+	},
+	
+	write : function(buffer) {
+		for (var i = 0; i < this.data.length; i++) {
+			// not JIS ...
+			buffer.put(this.data.charCodeAt(i), 8);
+		}
+	}
+};
+
+module.exports = QR8bitByte;
+
+};
+defs['QRBitBuffer'] = function(module, exports, require){
+function QRBitBuffer() {
+	this.buffer = [];
+	this.length = 0;
+}
+
+QRBitBuffer.prototype = {
+
+	get : function(index) {
+		var bufIndex = Math.floor(index / 8);
+		return ( (this.buffer[bufIndex] >>> (7 - index % 8) ) & 1) == 1;
+	},
+	
+	put : function(num, length) {
+		for (var i = 0; i < length; i++) {
+			this.putBit( ( (num >>> (length - i - 1) ) & 1) == 1);
+		}
+	},
+	
+	getLengthInBits : function() {
+		return this.length;
+	},
+	
+	putBit : function(bit) {
+	
+		var bufIndex = Math.floor(this.length / 8);
+		if (this.buffer.length <= bufIndex) {
+			this.buffer.push(0);
+		}
+	
+		if (bit) {
+			this.buffer[bufIndex] |= (0x80 >>> (this.length % 8) );
+		}
+	
+		this.length++;
+	}
+};
+
+module.exports = QRBitBuffer;
+
+};
+defs['QRErrorCorrectLevel'] = function(module, exports, require){
+module.exports = {
+	L : 1,
+	M : 0,
+	Q : 3,
+	H : 2
+};
+
+
+};
+defs['QRMaskPattern'] = function(module, exports, require){
+module.exports = {
+	PATTERN000 : 0,
+	PATTERN001 : 1,
+	PATTERN010 : 2,
+	PATTERN011 : 3,
+	PATTERN100 : 4,
+	PATTERN101 : 5,
+	PATTERN110 : 6,
+	PATTERN111 : 7
+};
+
+};
+defs['QRMath'] = function(module, exports, require){
+var QRMath = {
+
+	glog : function(n) {
+	
+		if (n < 1) {
+			throw new Error("glog(" + n + ")");
+		}
+		
+		return QRMath.LOG_TABLE[n];
+	},
+	
+	gexp : function(n) {
+	
+		while (n < 0) {
+			n += 255;
+		}
+	
+		while (n >= 256) {
+			n -= 255;
+		}
+	
+		return QRMath.EXP_TABLE[n];
+	},
+	
+	EXP_TABLE : new Array(256),
+	
+	LOG_TABLE : new Array(256)
+
+};
+	
+for (var i = 0; i < 8; i++) {
+	QRMath.EXP_TABLE[i] = 1 << i;
+}
+for (var i = 8; i < 256; i++) {
+	QRMath.EXP_TABLE[i] = QRMath.EXP_TABLE[i - 4]
+		^ QRMath.EXP_TABLE[i - 5]
+		^ QRMath.EXP_TABLE[i - 6]
+		^ QRMath.EXP_TABLE[i - 8];
+}
+for (var i = 0; i < 255; i++) {
+	QRMath.LOG_TABLE[QRMath.EXP_TABLE[i] ] = i;
+}
+
+module.exports = QRMath;
+
+};
+defs['QRMode'] = function(module, exports, require){
+module.exports = {
+    MODE_NUMBER :       1 << 0,
+    MODE_ALPHA_NUM :    1 << 1,
+    MODE_8BIT_BYTE :    1 << 2,
+    MODE_KANJI :        1 << 3
+};
+
+};
+defs['QRPolynomial'] = function(module, exports, require){
+var QRMath = require('./QRMath');
+
+function QRPolynomial(num, shift) {
+	if (num.length === undefined) {
+		throw new Error(num.length + "/" + shift);
+	}
+
+	var offset = 0;
+
+	while (offset < num.length && num[offset] === 0) {
+		offset++;
+	}
+
+	this.num = new Array(num.length - offset + shift);
+	for (var i = 0; i < num.length - offset; i++) {
+		this.num[i] = num[i + offset];
+	}
+}
+
+QRPolynomial.prototype = {
+
+	get : function(index) {
+		return this.num[index];
+	},
+	
+	getLength : function() {
+		return this.num.length;
+	},
+	
+	multiply : function(e) {
+	
+		var num = new Array(this.getLength() + e.getLength() - 1);
+	
+		for (var i = 0; i < this.getLength(); i++) {
+			for (var j = 0; j < e.getLength(); j++) {
+				num[i + j] ^= QRMath.gexp(QRMath.glog(this.get(i) ) + QRMath.glog(e.get(j) ) );
+			}
+		}
+	
+		return new QRPolynomial(num, 0);
+	},
+	
+	mod : function(e) {
+	
+		if (this.getLength() - e.getLength() < 0) {
+			return this;
+		}
+	
+		var ratio = QRMath.glog(this.get(0) ) - QRMath.glog(e.get(0) );
+	
+		var num = new Array(this.getLength() );
+		
+		for (var i = 0; i < this.getLength(); i++) {
+			num[i] = this.get(i);
+		}
+		
+		for (var x = 0; x < e.getLength(); x++) {
+			num[x] ^= QRMath.gexp(QRMath.glog(e.get(x) ) + ratio);
+		}
+	
+		// recursive call
+		return new QRPolynomial(num, 0).mod(e);
+	}
+};
+
+module.exports = QRPolynomial;
+
+};
+defs['QRRSBlock'] = function(module, exports, require){
+var QRErrorCorrectLevel = require('./QRErrorCorrectLevel');
+
+function QRRSBlock(totalCount, dataCount) {
+	this.totalCount = totalCount;
+	this.dataCount  = dataCount;
+}
+
+QRRSBlock.RS_BLOCK_TABLE = [
+
+	// L
+	// M
+	// Q
+	// H
+
+	// 1
+	[1, 26, 19],
+	[1, 26, 16],
+	[1, 26, 13],
+	[1, 26, 9],
+	
+	// 2
+	[1, 44, 34],
+	[1, 44, 28],
+	[1, 44, 22],
+	[1, 44, 16],
+
+	// 3
+	[1, 70, 55],
+	[1, 70, 44],
+	[2, 35, 17],
+	[2, 35, 13],
+
+	// 4		
+	[1, 100, 80],
+	[2, 50, 32],
+	[2, 50, 24],
+	[4, 25, 9],
+	
+	// 5
+	[1, 134, 108],
+	[2, 67, 43],
+	[2, 33, 15, 2, 34, 16],
+	[2, 33, 11, 2, 34, 12],
+	
+	// 6
+	[2, 86, 68],
+	[4, 43, 27],
+	[4, 43, 19],
+	[4, 43, 15],
+	
+	// 7		
+	[2, 98, 78],
+	[4, 49, 31],
+	[2, 32, 14, 4, 33, 15],
+	[4, 39, 13, 1, 40, 14],
+	
+	// 8
+	[2, 121, 97],
+	[2, 60, 38, 2, 61, 39],
+	[4, 40, 18, 2, 41, 19],
+	[4, 40, 14, 2, 41, 15],
+	
+	// 9
+	[2, 146, 116],
+	[3, 58, 36, 2, 59, 37],
+	[4, 36, 16, 4, 37, 17],
+	[4, 36, 12, 4, 37, 13],
+	
+	// 10		
+	[2, 86, 68, 2, 87, 69],
+	[4, 69, 43, 1, 70, 44],
+	[6, 43, 19, 2, 44, 20],
+	[6, 43, 15, 2, 44, 16],
+
+	// 11
+	[4, 101, 81],
+	[1, 80, 50, 4, 81, 51],
+	[4, 50, 22, 4, 51, 23],
+	[3, 36, 12, 8, 37, 13],
+
+	// 12
+	[2, 116, 92, 2, 117, 93],
+	[6, 58, 36, 2, 59, 37],
+	[4, 46, 20, 6, 47, 21],
+	[7, 42, 14, 4, 43, 15],
+
+	// 13
+	[4, 133, 107],
+	[8, 59, 37, 1, 60, 38],
+	[8, 44, 20, 4, 45, 21],
+	[12, 33, 11, 4, 34, 12],
+
+	// 14
+	[3, 145, 115, 1, 146, 116],
+	[4, 64, 40, 5, 65, 41],
+	[11, 36, 16, 5, 37, 17],
+	[11, 36, 12, 5, 37, 13],
+
+	// 15
+	[5, 109, 87, 1, 110, 88],
+	[5, 65, 41, 5, 66, 42],
+	[5, 54, 24, 7, 55, 25],
+	[11, 36, 12],
+
+	// 16
+	[5, 122, 98, 1, 123, 99],
+	[7, 73, 45, 3, 74, 46],
+	[15, 43, 19, 2, 44, 20],
+	[3, 45, 15, 13, 46, 16],
+
+	// 17
+	[1, 135, 107, 5, 136, 108],
+	[10, 74, 46, 1, 75, 47],
+	[1, 50, 22, 15, 51, 23],
+	[2, 42, 14, 17, 43, 15],
+
+	// 18
+	[5, 150, 120, 1, 151, 121],
+	[9, 69, 43, 4, 70, 44],
+	[17, 50, 22, 1, 51, 23],
+	[2, 42, 14, 19, 43, 15],
+
+	// 19
+	[3, 141, 113, 4, 142, 114],
+	[3, 70, 44, 11, 71, 45],
+	[17, 47, 21, 4, 48, 22],
+	[9, 39, 13, 16, 40, 14],
+
+	// 20
+	[3, 135, 107, 5, 136, 108],
+	[3, 67, 41, 13, 68, 42],
+	[15, 54, 24, 5, 55, 25],
+	[15, 43, 15, 10, 44, 16],
+
+	// 21
+	[4, 144, 116, 4, 145, 117],
+	[17, 68, 42],
+	[17, 50, 22, 6, 51, 23],
+	[19, 46, 16, 6, 47, 17],
+
+	// 22
+	[2, 139, 111, 7, 140, 112],
+	[17, 74, 46],
+	[7, 54, 24, 16, 55, 25],
+	[34, 37, 13],
+
+	// 23
+	[4, 151, 121, 5, 152, 122],
+	[4, 75, 47, 14, 76, 48],
+	[11, 54, 24, 14, 55, 25],
+	[16, 45, 15, 14, 46, 16],
+
+	// 24
+	[6, 147, 117, 4, 148, 118],
+	[6, 73, 45, 14, 74, 46],
+	[11, 54, 24, 16, 55, 25],
+	[30, 46, 16, 2, 47, 17],
+
+	// 25
+	[8, 132, 106, 4, 133, 107],
+	[8, 75, 47, 13, 76, 48],
+	[7, 54, 24, 22, 55, 25],
+	[22, 45, 15, 13, 46, 16],
+
+	// 26
+	[10, 142, 114, 2, 143, 115],
+	[19, 74, 46, 4, 75, 47],
+	[28, 50, 22, 6, 51, 23],
+	[33, 46, 16, 4, 47, 17],
+
+	// 27
+	[8, 152, 122, 4, 153, 123],
+	[22, 73, 45, 3, 74, 46],
+	[8, 53, 23, 26, 54, 24],
+	[12, 45, 15, 28, 46, 16],
+
+	// 28
+	[3, 147, 117, 10, 148, 118],
+	[3, 73, 45, 23, 74, 46],
+	[4, 54, 24, 31, 55, 25],
+	[11, 45, 15, 31, 46, 16],
+
+	// 29
+	[7, 146, 116, 7, 147, 117],
+	[21, 73, 45, 7, 74, 46],
+	[1, 53, 23, 37, 54, 24],
+	[19, 45, 15, 26, 46, 16],
+
+	// 30
+	[5, 145, 115, 10, 146, 116],
+	[19, 75, 47, 10, 76, 48],
+	[15, 54, 24, 25, 55, 25],
+	[23, 45, 15, 25, 46, 16],
+
+	// 31
+	[13, 145, 115, 3, 146, 116],
+	[2, 74, 46, 29, 75, 47],
+	[42, 54, 24, 1, 55, 25],
+	[23, 45, 15, 28, 46, 16],
+
+	// 32
+	[17, 145, 115],
+	[10, 74, 46, 23, 75, 47],
+	[10, 54, 24, 35, 55, 25],
+	[19, 45, 15, 35, 46, 16],
+
+	// 33
+	[17, 145, 115, 1, 146, 116],
+	[14, 74, 46, 21, 75, 47],
+	[29, 54, 24, 19, 55, 25],
+	[11, 45, 15, 46, 46, 16],
+
+	// 34
+	[13, 145, 115, 6, 146, 116],
+	[14, 74, 46, 23, 75, 47],
+	[44, 54, 24, 7, 55, 25],
+	[59, 46, 16, 1, 47, 17],
+
+	// 35
+	[12, 151, 121, 7, 152, 122],
+	[12, 75, 47, 26, 76, 48],
+	[39, 54, 24, 14, 55, 25],
+	[22, 45, 15, 41, 46, 16],
+
+	// 36
+	[6, 151, 121, 14, 152, 122],
+	[6, 75, 47, 34, 76, 48],
+	[46, 54, 24, 10, 55, 25],
+	[2, 45, 15, 64, 46, 16],
+
+	// 37
+	[17, 152, 122, 4, 153, 123],
+	[29, 74, 46, 14, 75, 47],
+	[49, 54, 24, 10, 55, 25],
+	[24, 45, 15, 46, 46, 16],
+
+	// 38
+	[4, 152, 122, 18, 153, 123],
+	[13, 74, 46, 32, 75, 47],
+	[48, 54, 24, 14, 55, 25],
+	[42, 45, 15, 32, 46, 16],
+
+	// 39
+	[20, 147, 117, 4, 148, 118],
+	[40, 75, 47, 7, 76, 48],
+	[43, 54, 24, 22, 55, 25],
+	[10, 45, 15, 67, 46, 16],
+
+	// 40
+	[19, 148, 118, 6, 149, 119],
+	[18, 75, 47, 31, 76, 48],
+	[34, 54, 24, 34, 55, 25],
+	[20, 45, 15, 61, 46, 16]
+];
+
+QRRSBlock.getRSBlocks = function(typeNumber, errorCorrectLevel) {
+	
+	var rsBlock = QRRSBlock.getRsBlockTable(typeNumber, errorCorrectLevel);
+	
+	if (rsBlock === undefined) {
+		throw new Error("bad rs block @ typeNumber:" + typeNumber + "/errorCorrectLevel:" + errorCorrectLevel);
+	}
+
+	var length = rsBlock.length / 3;
+	
+	var list = [];
+	
+	for (var i = 0; i < length; i++) {
+
+		var count = rsBlock[i * 3 + 0];
+		var totalCount = rsBlock[i * 3 + 1];
+		var dataCount  = rsBlock[i * 3 + 2];
+
+		for (var j = 0; j < count; j++) {
+			list.push(new QRRSBlock(totalCount, dataCount) );	
+		}
+	}
+	
+	return list;
+};
+
+QRRSBlock.getRsBlockTable = function(typeNumber, errorCorrectLevel) {
+
+	switch(errorCorrectLevel) {
+	case QRErrorCorrectLevel.L :
+		return QRRSBlock.RS_BLOCK_TABLE[(typeNumber - 1) * 4 + 0];
+	case QRErrorCorrectLevel.M :
+		return QRRSBlock.RS_BLOCK_TABLE[(typeNumber - 1) * 4 + 1];
+	case QRErrorCorrectLevel.Q :
+		return QRRSBlock.RS_BLOCK_TABLE[(typeNumber - 1) * 4 + 2];
+	case QRErrorCorrectLevel.H :
+		return QRRSBlock.RS_BLOCK_TABLE[(typeNumber - 1) * 4 + 3];
+	default :
+		return undefined;
+	}
+};
+
+module.exports = QRRSBlock;
+
+};
+defs['QRUtil'] = function(module, exports, require){
+var QRMode = require('./QRMode');
+var QRPolynomial = require('./QRPolynomial');
+var QRMath = require('./QRMath');
+var QRMaskPattern = require('./QRMaskPattern');
+
+var QRUtil = {
+
+    PATTERN_POSITION_TABLE : [
+        [],
+        [6, 18],
+        [6, 22],
+        [6, 26],
+        [6, 30],
+        [6, 34],
+        [6, 22, 38],
+        [6, 24, 42],
+        [6, 26, 46],
+        [6, 28, 50],
+        [6, 30, 54],        
+        [6, 32, 58],
+        [6, 34, 62],
+        [6, 26, 46, 66],
+        [6, 26, 48, 70],
+        [6, 26, 50, 74],
+        [6, 30, 54, 78],
+        [6, 30, 56, 82],
+        [6, 30, 58, 86],
+        [6, 34, 62, 90],
+        [6, 28, 50, 72, 94],
+        [6, 26, 50, 74, 98],
+        [6, 30, 54, 78, 102],
+        [6, 28, 54, 80, 106],
+        [6, 32, 58, 84, 110],
+        [6, 30, 58, 86, 114],
+        [6, 34, 62, 90, 118],
+        [6, 26, 50, 74, 98, 122],
+        [6, 30, 54, 78, 102, 126],
+        [6, 26, 52, 78, 104, 130],
+        [6, 30, 56, 82, 108, 134],
+        [6, 34, 60, 86, 112, 138],
+        [6, 30, 58, 86, 114, 142],
+        [6, 34, 62, 90, 118, 146],
+        [6, 30, 54, 78, 102, 126, 150],
+        [6, 24, 50, 76, 102, 128, 154],
+        [6, 28, 54, 80, 106, 132, 158],
+        [6, 32, 58, 84, 110, 136, 162],
+        [6, 26, 54, 82, 110, 138, 166],
+        [6, 30, 58, 86, 114, 142, 170]
+    ],
+
+    G15 : (1 << 10) | (1 << 8) | (1 << 5) | (1 << 4) | (1 << 2) | (1 << 1) | (1 << 0),
+    G18 : (1 << 12) | (1 << 11) | (1 << 10) | (1 << 9) | (1 << 8) | (1 << 5) | (1 << 2) | (1 << 0),
+    G15_MASK : (1 << 14) | (1 << 12) | (1 << 10)    | (1 << 4) | (1 << 1),
+
+    getBCHTypeInfo : function(data) {
+        var d = data << 10;
+        while (QRUtil.getBCHDigit(d) - QRUtil.getBCHDigit(QRUtil.G15) >= 0) {
+            d ^= (QRUtil.G15 << (QRUtil.getBCHDigit(d) - QRUtil.getBCHDigit(QRUtil.G15) ) );    
+        }
+        return ( (data << 10) | d) ^ QRUtil.G15_MASK;
+    },
+
+    getBCHTypeNumber : function(data) {
+        var d = data << 12;
+        while (QRUtil.getBCHDigit(d) - QRUtil.getBCHDigit(QRUtil.G18) >= 0) {
+            d ^= (QRUtil.G18 << (QRUtil.getBCHDigit(d) - QRUtil.getBCHDigit(QRUtil.G18) ) );    
+        }
+        return (data << 12) | d;
+    },
+
+    getBCHDigit : function(data) {
+
+        var digit = 0;
+
+        while (data !== 0) {
+            digit++;
+            data >>>= 1;
+        }
+
+        return digit;
+    },
+
+    getPatternPosition : function(typeNumber) {
+        return QRUtil.PATTERN_POSITION_TABLE[typeNumber - 1];
+    },
+
+    getMask : function(maskPattern, i, j) {
+        
+        switch (maskPattern) {
+            
+        case QRMaskPattern.PATTERN000 : return (i + j) % 2 === 0;
+        case QRMaskPattern.PATTERN001 : return i % 2 === 0;
+        case QRMaskPattern.PATTERN010 : return j % 3 === 0;
+        case QRMaskPattern.PATTERN011 : return (i + j) % 3 === 0;
+        case QRMaskPattern.PATTERN100 : return (Math.floor(i / 2) + Math.floor(j / 3) ) % 2 === 0;
+        case QRMaskPattern.PATTERN101 : return (i * j) % 2 + (i * j) % 3 === 0;
+        case QRMaskPattern.PATTERN110 : return ( (i * j) % 2 + (i * j) % 3) % 2 === 0;
+        case QRMaskPattern.PATTERN111 : return ( (i * j) % 3 + (i + j) % 2) % 2 === 0;
+
+        default :
+            throw new Error("bad maskPattern:" + maskPattern);
+        }
+    },
+
+    getErrorCorrectPolynomial : function(errorCorrectLength) {
+
+        var a = new QRPolynomial([1], 0);
+
+        for (var i = 0; i < errorCorrectLength; i++) {
+            a = a.multiply(new QRPolynomial([1, QRMath.gexp(i)], 0) );
+        }
+
+        return a;
+    },
+
+    getLengthInBits : function(mode, type) {
+
+        if (1 <= type && type < 10) {
+
+            // 1 - 9
+
+            switch(mode) {
+            case QRMode.MODE_NUMBER     : return 10;
+            case QRMode.MODE_ALPHA_NUM  : return 9;
+            case QRMode.MODE_8BIT_BYTE  : return 8;
+            case QRMode.MODE_KANJI      : return 8;
+            default :
+                throw new Error("mode:" + mode);
+            }
+
+        } else if (type < 27) {
+
+            // 10 - 26
+
+            switch(mode) {
+            case QRMode.MODE_NUMBER     : return 12;
+            case QRMode.MODE_ALPHA_NUM  : return 11;
+            case QRMode.MODE_8BIT_BYTE  : return 16;
+            case QRMode.MODE_KANJI      : return 10;
+            default :
+                throw new Error("mode:" + mode);
+            }
+
+        } else if (type < 41) {
+
+            // 27 - 40
+
+            switch(mode) {
+            case QRMode.MODE_NUMBER     : return 14;
+            case QRMode.MODE_ALPHA_NUM  : return 13;
+            case QRMode.MODE_8BIT_BYTE  : return 16;
+            case QRMode.MODE_KANJI      : return 12;
+            default :
+                throw new Error("mode:" + mode);
+            }
+
+        } else {
+            throw new Error("type:" + type);
+        }
+    },
+
+    getLostPoint : function(qrCode) {
+        
+        var moduleCount = qrCode.getModuleCount();
+        var lostPoint = 0;
+        var row = 0; 
+        var col = 0;
+
+        
+        // LEVEL1
+        
+        for (row = 0; row < moduleCount; row++) {
+
+            for (col = 0; col < moduleCount; col++) {
+
+                var sameCount = 0;
+                var dark = qrCode.isDark(row, col);
+
+                for (var r = -1; r <= 1; r++) {
+
+                    if (row + r < 0 || moduleCount <= row + r) {
+                        continue;
+                    }
+
+                    for (var c = -1; c <= 1; c++) {
+
+                        if (col + c < 0 || moduleCount <= col + c) {
+                            continue;
+                        }
+
+                        if (r === 0 && c === 0) {
+                            continue;
+                        }
+
+                        if (dark === qrCode.isDark(row + r, col + c) ) {
+                            sameCount++;
+                        }
+                    }
+                }
+
+                if (sameCount > 5) {
+                    lostPoint += (3 + sameCount - 5);
+                }
+            }
+        }
+
+        // LEVEL2
+
+        for (row = 0; row < moduleCount - 1; row++) {
+            for (col = 0; col < moduleCount - 1; col++) {
+                var count = 0;
+                if (qrCode.isDark(row,     col    ) ) count++;
+                if (qrCode.isDark(row + 1, col    ) ) count++;
+                if (qrCode.isDark(row,     col + 1) ) count++;
+                if (qrCode.isDark(row + 1, col + 1) ) count++;
+                if (count === 0 || count === 4) {
+                    lostPoint += 3;
+                }
+            }
+        }
+
+        // LEVEL3
+
+        for (row = 0; row < moduleCount; row++) {
+            for (col = 0; col < moduleCount - 6; col++) {
+                if (qrCode.isDark(row, col) && 
+                        !qrCode.isDark(row, col + 1) && 
+                         qrCode.isDark(row, col + 2) && 
+                         qrCode.isDark(row, col + 3) && 
+                         qrCode.isDark(row, col + 4) && 
+                        !qrCode.isDark(row, col + 5) && 
+                         qrCode.isDark(row, col + 6) ) {
+                    lostPoint += 40;
+                }
+            }
+        }
+
+        for (col = 0; col < moduleCount; col++) {
+            for (row = 0; row < moduleCount - 6; row++) {
+                if (qrCode.isDark(row, col) &&
+                        !qrCode.isDark(row + 1, col) &&
+                         qrCode.isDark(row + 2, col) &&
+                         qrCode.isDark(row + 3, col) &&
+                         qrCode.isDark(row + 4, col) &&
+                        !qrCode.isDark(row + 5, col) &&
+                         qrCode.isDark(row + 6, col) ) {
+                    lostPoint += 40;
+                }
+            }
+        }
+
+        // LEVEL4
+        
+        var darkCount = 0;
+
+        for (col = 0; col < moduleCount; col++) {
+            for (row = 0; row < moduleCount; row++) {
+                if (qrCode.isDark(row, col) ) {
+                    darkCount++;
+                }
+            }
+        }
+        
+        var ratio = Math.abs(100 * darkCount / moduleCount / moduleCount - 50) / 5;
+        lostPoint += ratio * 10;
+
+        return lostPoint;       
+    }
+
+};
+
+module.exports = QRUtil;
+
+};
+defs['index'] = function(module, exports, require){
+//---------------------------------------------------------------------
+// QRCode for JavaScript
+//
+// Copyright (c) 2009 Kazuhiko Arase
+//
+// URL: http://www.d-project.com/
+//
+// Licensed under the MIT license:
+//   http://www.opensource.org/licenses/mit-license.php
+//
+// The word "QR Code" is registered trademark of 
+// DENSO WAVE INCORPORATED
+//   http://www.denso-wave.com/qrcode/faqpatent-e.html
+//
+//---------------------------------------------------------------------
+// Modified to work in node for this project (and some refactoring)
+//---------------------------------------------------------------------
+
+var QR8bitByte = require('./QR8bitByte');
+var QRUtil = require('./QRUtil');
+var QRPolynomial = require('./QRPolynomial');
+var QRRSBlock = require('./QRRSBlock');
+var QRBitBuffer = require('./QRBitBuffer');
+
+function QRCode(typeNumber, errorCorrectLevel) {
+	this.typeNumber = typeNumber;
+	this.errorCorrectLevel = errorCorrectLevel;
+	this.modules = null;
+	this.moduleCount = 0;
+	this.dataCache = null;
+	this.dataList = [];
+}
+
+QRCode.prototype = {
+	
+	addData : function(data) {
+		var newData = new QR8bitByte(data);
+		this.dataList.push(newData);
+		this.dataCache = null;
+	},
+	
+	isDark : function(row, col) {
+		if (row < 0 || this.moduleCount <= row || col < 0 || this.moduleCount <= col) {
+			throw new Error(row + "," + col);
+		}
+		return this.modules[row][col];
+	},
+
+	getModuleCount : function() {
+		return this.moduleCount;
+	},
+	
+	make : function() {
+		// Calculate automatically typeNumber if provided is < 1
+		if (this.typeNumber < 1 ){
+			var typeNumber = 1;
+			for (typeNumber = 1; typeNumber < 40; typeNumber++) {
+				var rsBlocks = QRRSBlock.getRSBlocks(typeNumber, this.errorCorrectLevel);
+
+				var buffer = new QRBitBuffer();
+				var totalDataCount = 0;
+				for (var i = 0; i < rsBlocks.length; i++) {
+					totalDataCount += rsBlocks[i].dataCount;
+				}
+
+				for (var x = 0; x < this.dataList.length; x++) {
+					var data = this.dataList[x];
+					buffer.put(data.mode, 4);
+					buffer.put(data.getLength(), QRUtil.getLengthInBits(data.mode, typeNumber) );
+					data.write(buffer);
+				}
+				if (buffer.getLengthInBits() <= totalDataCount * 8)
+					break;
+			}
+			this.typeNumber = typeNumber;
+		}
+		this.makeImpl(false, this.getBestMaskPattern() );
+	},
+	
+	makeImpl : function(test, maskPattern) {
+		
+		this.moduleCount = this.typeNumber * 4 + 17;
+		this.modules = new Array(this.moduleCount);
+		
+		for (var row = 0; row < this.moduleCount; row++) {
+			
+			this.modules[row] = new Array(this.moduleCount);
+			
+			for (var col = 0; col < this.moduleCount; col++) {
+				this.modules[row][col] = null;//(col + row) % 3;
+			}
+		}
+	
+		this.setupPositionProbePattern(0, 0);
+		this.setupPositionProbePattern(this.moduleCount - 7, 0);
+		this.setupPositionProbePattern(0, this.moduleCount - 7);
+		this.setupPositionAdjustPattern();
+		this.setupTimingPattern();
+		this.setupTypeInfo(test, maskPattern);
+		
+		if (this.typeNumber >= 7) {
+			this.setupTypeNumber(test);
+		}
+	
+		if (this.dataCache === null) {
+			this.dataCache = QRCode.createData(this.typeNumber, this.errorCorrectLevel, this.dataList);
+		}
+	
+		this.mapData(this.dataCache, maskPattern);
+	},
+
+	setupPositionProbePattern : function(row, col)  {
+		
+		for (var r = -1; r <= 7; r++) {
+			
+			if (row + r <= -1 || this.moduleCount <= row + r) continue;
+			
+			for (var c = -1; c <= 7; c++) {
+				
+				if (col + c <= -1 || this.moduleCount <= col + c) continue;
+				
+				if ( (0 <= r && r <= 6 && (c === 0 || c === 6) ) || 
+                     (0 <= c && c <= 6 && (r === 0 || r === 6) ) || 
+                     (2 <= r && r <= 4 && 2 <= c && c <= 4) ) {
+					this.modules[row + r][col + c] = true;
+				} else {
+					this.modules[row + r][col + c] = false;
+				}
+			}		
+		}		
+	},
+	
+	getBestMaskPattern : function() {
+	
+		var minLostPoint = 0;
+		var pattern = 0;
+	
+		for (var i = 0; i < 8; i++) {
+			
+			this.makeImpl(true, i);
+	
+			var lostPoint = QRUtil.getLostPoint(this);
+	
+			if (i === 0 || minLostPoint >  lostPoint) {
+				minLostPoint = lostPoint;
+				pattern = i;
+			}
+		}
+	
+		return pattern;
+	},
+	
+	createMovieClip : function(target_mc, instance_name, depth) {
+	
+		var qr_mc = target_mc.createEmptyMovieClip(instance_name, depth);
+		var cs = 1;
+	
+		this.make();
+
+		for (var row = 0; row < this.modules.length; row++) {
+			
+			var y = row * cs;
+			
+			for (var col = 0; col < this.modules[row].length; col++) {
+	
+				var x = col * cs;
+				var dark = this.modules[row][col];
+			
+				if (dark) {
+					qr_mc.beginFill(0, 100);
+					qr_mc.moveTo(x, y);
+					qr_mc.lineTo(x + cs, y);
+					qr_mc.lineTo(x + cs, y + cs);
+					qr_mc.lineTo(x, y + cs);
+					qr_mc.endFill();
+				}
+			}
+		}
+		
+		return qr_mc;
+	},
+
+	setupTimingPattern : function() {
+		
+		for (var r = 8; r < this.moduleCount - 8; r++) {
+			if (this.modules[r][6] !== null) {
+				continue;
+			}
+			this.modules[r][6] = (r % 2 === 0);
+		}
+	
+		for (var c = 8; c < this.moduleCount - 8; c++) {
+			if (this.modules[6][c] !== null) {
+				continue;
+			}
+			this.modules[6][c] = (c % 2 === 0);
+		}
+	},
+	
+	setupPositionAdjustPattern : function() {
+	
+		var pos = QRUtil.getPatternPosition(this.typeNumber);
+		
+		for (var i = 0; i < pos.length; i++) {
+		
+			for (var j = 0; j < pos.length; j++) {
+			
+				var row = pos[i];
+				var col = pos[j];
+				
+				if (this.modules[row][col] !== null) {
+					continue;
+				}
+				
+				for (var r = -2; r <= 2; r++) {
+				
+					for (var c = -2; c <= 2; c++) {
+					
+						if (Math.abs(r) === 2 || 
+                            Math.abs(c) === 2 ||
+                            (r === 0 && c === 0) ) {
+							this.modules[row + r][col + c] = true;
+						} else {
+							this.modules[row + r][col + c] = false;
+						}
+					}
+				}
+			}
+		}
+	},
+	
+	setupTypeNumber : function(test) {
+	
+		var bits = QRUtil.getBCHTypeNumber(this.typeNumber);
+        var mod;
+	
+		for (var i = 0; i < 18; i++) {
+			mod = (!test && ( (bits >> i) & 1) === 1);
+			this.modules[Math.floor(i / 3)][i % 3 + this.moduleCount - 8 - 3] = mod;
+		}
+	
+		for (var x = 0; x < 18; x++) {
+			mod = (!test && ( (bits >> x) & 1) === 1);
+			this.modules[x % 3 + this.moduleCount - 8 - 3][Math.floor(x / 3)] = mod;
+		}
+	},
+	
+	setupTypeInfo : function(test, maskPattern) {
+	
+		var data = (this.errorCorrectLevel << 3) | maskPattern;
+		var bits = QRUtil.getBCHTypeInfo(data);
+        var mod;
+	
+		// vertical		
+		for (var v = 0; v < 15; v++) {
+	
+			mod = (!test && ( (bits >> v) & 1) === 1);
+	
+			if (v < 6) {
+				this.modules[v][8] = mod;
+			} else if (v < 8) {
+				this.modules[v + 1][8] = mod;
+			} else {
+				this.modules[this.moduleCount - 15 + v][8] = mod;
+			}
+		}
+	
+		// horizontal
+		for (var h = 0; h < 15; h++) {
+	
+			mod = (!test && ( (bits >> h) & 1) === 1);
+			
+			if (h < 8) {
+				this.modules[8][this.moduleCount - h - 1] = mod;
+			} else if (h < 9) {
+				this.modules[8][15 - h - 1 + 1] = mod;
+			} else {
+				this.modules[8][15 - h - 1] = mod;
+			}
+		}
+	
+		// fixed module
+		this.modules[this.moduleCount - 8][8] = (!test);
+	
+	},
+	
+	mapData : function(data, maskPattern) {
+		
+		var inc = -1;
+		var row = this.moduleCount - 1;
+		var bitIndex = 7;
+		var byteIndex = 0;
+		
+		for (var col = this.moduleCount - 1; col > 0; col -= 2) {
+	
+			if (col === 6) col--;
+	
+			while (true) {
+	
+				for (var c = 0; c < 2; c++) {
+					
+					if (this.modules[row][col - c] === null) {
+						
+						var dark = false;
+	
+						if (byteIndex < data.length) {
+							dark = ( ( (data[byteIndex] >>> bitIndex) & 1) === 1);
+						}
+	
+						var mask = QRUtil.getMask(maskPattern, row, col - c);
+	
+						if (mask) {
+							dark = !dark;
+						}
+						
+						this.modules[row][col - c] = dark;
+						bitIndex--;
+	
+						if (bitIndex === -1) {
+							byteIndex++;
+							bitIndex = 7;
+						}
+					}
+				}
+								
+				row += inc;
+	
+				if (row < 0 || this.moduleCount <= row) {
+					row -= inc;
+					inc = -inc;
+					break;
+				}
+			}
+		}
+		
+	}
+
+};
+
+QRCode.PAD0 = 0xEC;
+QRCode.PAD1 = 0x11;
+
+QRCode.createData = function(typeNumber, errorCorrectLevel, dataList) {
+	
+	var rsBlocks = QRRSBlock.getRSBlocks(typeNumber, errorCorrectLevel);
+	
+	var buffer = new QRBitBuffer();
+	
+	for (var i = 0; i < dataList.length; i++) {
+		var data = dataList[i];
+		buffer.put(data.mode, 4);
+		buffer.put(data.getLength(), QRUtil.getLengthInBits(data.mode, typeNumber) );
+		data.write(buffer);
+	}
+
+	// calc num max data.
+	var totalDataCount = 0;
+	for (var x = 0; x < rsBlocks.length; x++) {
+		totalDataCount += rsBlocks[x].dataCount;
+	}
+
+	if (buffer.getLengthInBits() > totalDataCount * 8) {
+		throw new Error("code length overflow. (" + 
+            buffer.getLengthInBits() + 
+            ">" +  
+            totalDataCount * 8 + 
+            ")");
+	}
+
+	// end code
+	if (buffer.getLengthInBits() + 4 <= totalDataCount * 8) {
+		buffer.put(0, 4);
+	}
+
+	// padding
+	while (buffer.getLengthInBits() % 8 !== 0) {
+		buffer.putBit(false);
+	}
+
+	// padding
+	while (true) {
+		
+		if (buffer.getLengthInBits() >= totalDataCount * 8) {
+			break;
+		}
+		buffer.put(QRCode.PAD0, 8);
+		
+		if (buffer.getLengthInBits() >= totalDataCount * 8) {
+			break;
+		}
+		buffer.put(QRCode.PAD1, 8);
+	}
+
+	return QRCode.createBytes(buffer, rsBlocks);
+};
+
+QRCode.createBytes = function(buffer, rsBlocks) {
+
+	var offset = 0;
+	
+	var maxDcCount = 0;
+	var maxEcCount = 0;
+	
+	var dcdata = new Array(rsBlocks.length);
+	var ecdata = new Array(rsBlocks.length);
+	
+	for (var r = 0; r < rsBlocks.length; r++) {
+
+		var dcCount = rsBlocks[r].dataCount;
+		var ecCount = rsBlocks[r].totalCount - dcCount;
+
+		maxDcCount = Math.max(maxDcCount, dcCount);
+		maxEcCount = Math.max(maxEcCount, ecCount);
+		
+		dcdata[r] = new Array(dcCount);
+		
+		for (var i = 0; i < dcdata[r].length; i++) {
+			dcdata[r][i] = 0xff & buffer.buffer[i + offset];
+		}
+		offset += dcCount;
+		
+		var rsPoly = QRUtil.getErrorCorrectPolynomial(ecCount);
+		var rawPoly = new QRPolynomial(dcdata[r], rsPoly.getLength() - 1);
+
+		var modPoly = rawPoly.mod(rsPoly);
+		ecdata[r] = new Array(rsPoly.getLength() - 1);
+		for (var x = 0; x < ecdata[r].length; x++) {
+            var modIndex = x + modPoly.getLength() - ecdata[r].length;
+			ecdata[r][x] = (modIndex >= 0)? modPoly.get(modIndex) : 0;
+		}
+
+	}
+	
+	var totalCodeCount = 0;
+	for (var y = 0; y < rsBlocks.length; y++) {
+		totalCodeCount += rsBlocks[y].totalCount;
+	}
+
+	var data = new Array(totalCodeCount);
+	var index = 0;
+
+	for (var z = 0; z < maxDcCount; z++) {
+		for (var s = 0; s < rsBlocks.length; s++) {
+			if (z < dcdata[s].length) {
+				data[index++] = dcdata[s][z];
+			}
+		}
+	}
+
+	for (var xx = 0; xx < maxEcCount; xx++) {
+		for (var t = 0; t < rsBlocks.length; t++) {
+			if (xx < ecdata[t].length) {
+				data[index++] = ecdata[t][xx];
+			}
+		}
+	}
+
+	return data;
+
+};
+
+module.exports = QRCode;
+
+};
+const QRCode = req('index'), ECL = req('QRErrorCorrectLevel');
+return function qrSvg(text){
+  const q = new QRCode(-1, ECL.M); q.addData(text); q.make();
+  const n = q.getModuleCount(), pad = 4; let d = '';
+  for (let r = 0; r < n; r++) for (let c = 0; c < n; c++) if (q.modules[r][c]) d += 'M' + (c + pad) + ' ' + (r + pad) + 'h1v1h-1z';
+  const s = n + pad * 2;
+  return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ' + s + ' ' + s + '" shape-rendering="crispEdges" role="img" aria-label="QR code"><rect width="' + s + '" height="' + s + '" fill="#fff"/><path d="' + d + '" fill="#000"/></svg>';
+};
+})();
+
+/* ---------- accès Supabase (fetch pur, sans bibliothèque) ---------- */
+const CFG = window.TG_CONFIG || {};
+const CONFIGURED = !!(CFG.url && CFG.anonKey && !/VOTRE|YOUR/i.test(CFG.url + CFG.anonKey));
+const API = {
+  auth: null,
+  loadAuth(){ try { this.auth = JSON.parse(localStorage.getItem('tg_auth') || 'null'); } catch (e) { this.auth = null; } },
+  saveAuth(a){ this.auth = a; try { a ? localStorage.setItem('tg_auth', JSON.stringify(a)) : localStorage.removeItem('tg_auth'); } catch (e) {} },
+  base(){ return CFG.url.replace(/\/+$/, ''); },
+  headers(extra){
+    const h = { apikey: CFG.anonKey, 'Content-Type': 'application/json' };
+    if (this.auth) h.Authorization = 'Bearer ' + this.auth.access_token;   // sans connexion : seule la clé publique est envoyée
+    return Object.assign(h, extra || {});
+  },
+  async tokenCall(qs, body){
+    const res = await fetch(this.base() + '/auth/v1/token?' + qs, { method: 'POST', headers: { apikey: CFG.anonKey, 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+    const j = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(j.error_description || j.msg || j.error || ('HTTP ' + res.status));
+    this.saveAuth({ access_token: j.access_token, refresh_token: j.refresh_token, expires_at: Math.floor(Date.now() / 1000) + (j.expires_in || 3600), email: (j.user && j.user.email) || (this.auth && this.auth.email) || '' });
+    return this.auth;
+  },
+  login(email, password){ return this.tokenCall('grant_type=password', { email, password }); },
+  async refresh(){
+    if (!this.auth || !this.auth.refresh_token) throw new Error('Session expirée');
+    return this.tokenCall('grant_type=refresh_token', { refresh_token: this.auth.refresh_token });
+  },
+  logout(){ this.saveAuth(null); },
+  async ensureFresh(){
+    if (this.auth && this.auth.expires_at - 60 < Date.now() / 1000){ try { await this.refresh(); } catch (e) { this.logout(); throw e; } }
+  },
+  async call(path, opts, retry){
+    if (this.auth) await this.ensureFresh();
+    let res;
+    try { res = await fetch(this.base() + path, Object.assign({}, opts, { headers: this.headers(opts && opts.headers) })); }
+    catch (e) { throw new Error('Pas de connexion à Internet'); }
+    if (res.status === 401 && this.auth && !retry){ try { await this.refresh(); return this.call(path, opts, true); } catch (e) { this.logout(); throw new Error('Session expirée : reconnectez-vous'); } }
+    const txt = await res.text(); let j = null; try { j = txt ? JSON.parse(txt) : null; } catch (e) {}
+    if (!res.ok){ const m = (j && (j.message || j.hint || j.error)) || ('HTTP ' + res.status); const err = new Error(m); err.status = res.status; throw err; }
+    return j;
+  },
+  select(table, qs){ return this.call('/rest/v1/' + table + '?' + qs, { method: 'GET' }); },
+  upsert(table, row){ return this.call('/rest/v1/' + table + '?on_conflict=id', { method: 'POST', headers: { Prefer: 'resolution=merge-duplicates,return=minimal' }, body: JSON.stringify(row) }); },
+  remove(table, id){ return this.call('/rest/v1/' + table + '?id=eq.' + encodeURIComponent(id), { method: 'DELETE', headers: { Prefer: 'return=minimal' } }); },
+  rpc(fn, args){ return this.call('/rest/v1/rpc/' + fn, { method: 'POST', body: JSON.stringify(args || {}) }); }
+};
+API.loadAuth();
+
+
+/* ===================== application ===================== */
+const $ = s => document.querySelector(s);
+const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const nb = s => s.replace(/ ([?!:;»%€])/g, ' $1').replace(/« /g, '« ');
+const LS = {
+  get(k, d){ try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : d; } catch (e) { return d; } },
+  set(k, v){ try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} }
+};
+const nf0 = new Intl.NumberFormat('fr-FR', { maximumFractionDigits: 0 });
+const nf1 = new Intl.NumberFormat('fr-FR', { minimumFractionDigits: 1, maximumFractionDigits: 1 });
+const pc = x => x == null ? '–' : Math.round(x * 100) + ' %';
+const fmtP = p => p == null ? '' : (p < 0.001 ? 'p < 0,001' : 'p = ' + p.toFixed(3).replace('.', ','));
+let CUR = 'EUR';
+const money = (x, c) => x == null ? '–' : nf0.format(Math.round(x)) + ' ' + (CUR_SYM[c] || c);
+const eur = x => money(x, CUR);
+const sgn = x => (x > 0.049 ? '+' : x < -0.049 ? '−' : '') + nf1.format(Math.abs(x));
+
+const dstr = new Date().toLocaleDateString('fr-FR');
+const S = {
+  tab: 'run', records: [], dbRecords: [], contacts: [],
+  auth: null, loginErr: '', busy: false,
+  cfg: Object.assign({ session: 'Session ' + dstr, wineName: '', wineType: 'Rouge', share: 5, pidMode: 'new', pid: '', lang: 'fr', cur: 'EUR', org: 'Wine Optimizer' }, LS.get('tg_cfg', {})),
+  run: null, demo: false, demoRecs: null, flt: { session: 'all', type: 'all', first: false },
+  csv: null, confirmDel: null, err: ''
+};
+S.cfg.rates = Object.assign({ HKD: 0.11, USD: 0.86, GBP: 1.16 }, S.cfg.rates || {});
+S.flt.conv = true;
+
+/* ---------- stockage : Supabase ---------- */
+function rebuild(){
+  S.records = S.dbRecords;
+  softRender();
+}
+const store = {
+  timer: null,
+  async init(){ await this.pull(); clearInterval(this.timer); this.timer = setInterval(() => { if (document.visibilityState === 'visible' && S.auth && !TESTER) this.pull(true); }, 10000); },
+  async pull(quiet){
+    try {
+      let rows = [], off = 0, part;
+      do { part = await API.select('tastings', 'select=id,status,created_at,rec&order=created_at.desc&limit=1000&offset=' + off); rows = rows.concat(part); off += 1000; } while (part.length === 1000 && off < 20000);
+      S.dbRecords = rows.map(x => Object.assign({}, x.rec, { id: x.id, status: x.status, createdAt: (x.rec && x.rec.createdAt) || x.created_at }));
+      const cs = await API.select('contacts', 'select=*&order=created_at.desc&limit=2000');
+      S.contacts = cs.map(c => ({ id: c.id, email: c.email, lang: c.lang, session: c.session, createdAt: c.created_at, consent: c.consent, kind: 'contact' }));
+      S.sync = 'ok'; S.syncErr = '';
+      rebuild();
+    } catch (e) {
+      S.sync = 'err'; S.syncErr = e.message;
+      if (/expir|reconnect|JWT/i.test(e.message)){ S.auth = null; API.logout(); }
+      if (!quiet) toast(e.message); softRender();
+    }
+  },
+  async put(rec){
+    const body = JSON.parse(JSON.stringify(rec)); delete body.id;
+    await API.upsert('tastings', { id: rec.id, session: rec.session, status: rec.status, rec: body });
+    const i = S.dbRecords.findIndex(r => r.id === rec.id);
+    const row = Object.assign({}, rec); if (i >= 0) S.dbRecords[i] = row; else S.dbRecords.unshift(row);
+    rebuild();
+  },
+  async del(id){
+    const isC = S.contacts.some(c => c.id === id);
+    try { await API.remove(isC ? 'contacts' : 'tastings', id); } catch (e) { toast(e.message); return; }
+    S.dbRecords = S.dbRecords.filter(r => r.id !== id); S.contacts = S.contacts.filter(c => c.id !== id); rebuild();
+  }
+};
+
+/* ---------- utilitaires d'interface ---------- */
+function toast(msg){ const t = $('#toast'); t.textContent = msg; t.classList.add('on'); clearTimeout(toast._t); toast._t = setTimeout(() => t.classList.remove('on'), 2600); }
+function copyText(txt){
+  const done = () => toast('Copié');
+  if (navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(txt).then(done).catch(() => fallbackCopy(txt));
+  } else fallbackCopy(txt);
+}
+function fallbackCopy(txt){
+  try { const ta = document.createElement('textarea'); ta.value = txt; ta.style.cssText = 'position:fixed;opacity:0'; document.body.appendChild(ta); ta.select(); const ok = document.execCommand('copy'); ta.remove(); if (ok) return toast('Copié'); } catch (e) {}
+  toast('Copie impossible ici : sélectionnez le texte à la main.');
+}
+const chip = (attrs, label, on) => `<button type="button" class="chip" ${attrs} aria-pressed="${on ? 'true' : 'false'}">${esc(label)}</button>`;
+const chipsFor = (act, key, list, cur) => `<div class="chips" role="group">${list.map(([k, l]) => chip(`data-act="${act}" data-k="${key}" data-v="${esc(k)}"`, l, cur === k)).join('')}</div>`;
+const scale = (act, extra, n, cur) => `<div class="scale" role="group">${Array.from({ length: n }, (_, i) => `<button type="button" data-act="${act}" ${extra} data-v="${i + 1}" aria-pressed="${cur === i + 1}">${i + 1}</button>`).join('')}</div>`;
+const POS = { 2: ['à gauche', 'à droite'], 3: ['à gauche', 'au milieu', 'à droite'] };
+const dot = (c, cls) => `<span class="dot ${cls || ''}" style="--c:var(--c-${c})" aria-hidden="true"></span>`;
+const nm = (c, T) => `<span class="cn">${dot(c, 'xs')}${esc(TXL(T).col[c])}</span>`;
+const glasses = (T, codes, pick, act) => `<div class="glasses" role="group">${codes.map((c, i) => `<button type="button" class="glass" data-act="${act}" data-v="${i}" aria-pressed="${pick === i}" aria-label="${T.gl(T.col[c])}">${dot(c)}<span class="gname">${esc(T.col[c])}</span><span class="gpos">${T['pos' + codes.length][i]}</span></button>`).join('')}</div>`;
+const logo = '<svg viewBox="0 0 30 20" aria-hidden="true"><circle cx="10" cy="10" r="8" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="20" cy="10" r="8" fill="none" stroke="currentColor" stroke-width="2"/></svg>';
+
+/* ---------- état partagé de rendu ---------- */
+function setPath(path, val){
+  const parts = path.split('.'); let o = S;
+  for (let i = 0; i < parts.length - 1; i++) o = o[parts[i]];
+  o[parts[parts.length - 1]] = val;
+  if (parts[0] === 'cfg') LS.set('tg_cfg', S.cfg);
+}
+function render(){
+  const y = window.scrollY;
+  let html, pl = 'fr';
+  if (TESTER){ html = viewTester(); pl = (S.run && S.run.rec && S.run.rec.lang) || 'fr'; }
+  else if (!CONFIGURED) html = viewSetup();
+  else if (!S.auth) html = viewLogin();
+  else html = shell(S.run ? (S.run.step === 'qr' ? viewQR() : viewPrep()) : ({ run: viewRun, res: viewRes, proto: viewProto, data: viewData })[S.tab]());
+  document.documentElement.lang = HTML_LANG[pl] || 'fr';
+  $('#app').innerHTML = (!pl || pl === 'fr') ? nb(html) : html;
+  window.scrollTo(0, y);
+  syncNext();
+}
+function softRender(){
+  const a = document.activeElement;
+  if (a && /^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName)) return;
+  if (TESTER) return;
+  render();
+}
+function go(step){ S.run.step = step; render(); window.scrollTo(0, 0); }
+function shell(inner){
+  const tabs = [['run', 'Dégustation'], ['res', 'Résultats'], ['proto', 'Protocole'], ['data', 'Données']];
+  const mode = S.sync === 'err' ? 'Hors ligne' : (S.auth && S.auth.email) || '';
+  const nav = S.run ? '' : `<nav class="wrap tabs" role="tablist" aria-label="Sections">${tabs.map(([k, l]) => `<button type="button" role="tab" data-act="tab" data-v="${k}" aria-selected="${S.tab === k}">${l}</button>`).join('')}</nav>`;
+  const banners = (S.sync === 'err' ? `<div class="banner alert" role="alert">Connexion impossible : ${esc(S.syncErr)}. Les données affichées peuvent être anciennes.</div>` : '');
+  return `<header class="top"><div class="wrap bar"><div class="brand">${logo}<span class="brand-t">Two-Glass Test</span><span class="brand-s">Wine Optimizer</span></div><span class="mode">${esc(mode)}</span>${S.run ? '' : '<button type="button" class="btn quiet" data-act="logout" style="min-height:34px;padding:4px 10px">Sortir</button>'}</div>${nav}</header><main class="wrap">${banners}${inner}</main>`;
+}
+
+/* ---------- onglet Dégustation (animateur) ---------- */
+function sessionRecs(){ return S.records.filter(r => r.session === S.cfg.session); }
+function viewRun(){
+  const c = S.cfg, inS = sessionRecs(), done = inS.filter(r => r.status === 'complete');
+  const pids = Array.from(new Set(inS.map(r => r.pid))).sort();
+  if (c.pidMode === 'existing' && !pids.includes(c.pid)) c.pid = pids[0] || '';
+  const nT = done.filter(r => r.arm === 'test').length, nC = done.length - nT;
+  return `
+  <section class="card">
+    <div><h1>Nouvelle dégustation</h1>
+    <p class="lead" style="margin-top:8px">Une dégustation, c’est un participant et un vin. L’application prépare la fiche des verres : pastilles de couleur et ordre tirés au sort. Vous préparez les verres, puis un QR code ouvre le questionnaire sur le téléphone du testeur.</p></div>
+    <div class="field"><label for="f-session">Session</label>
+      <input id="f-session" type="text" autocomplete="off" data-bind="cfg.session" value="${esc(c.session)}">
+      <p class="hint">Une soirée ou un événement. Les tirages sont équilibrés au sein d’une session. Avec plusieurs animateurs, ajoutez votre prénom au nom de session pour éviter les doublons de numéros de participant.</p></div>
+    <div class="field"><span class="lbl">Participant</span>
+      <div class="chips" role="group">
+        ${chip('data-act="cfg" data-k="pidMode" data-v="new"', 'Nouveau participant', c.pidMode === 'new')}
+        ${chip('data-act="cfg" data-k="pidMode" data-v="existing"', 'Participant déjà inscrit', c.pidMode === 'existing')}
+      </div>
+      ${c.pidMode === 'existing' ? (pids.length ? `<select id="f-pid" aria-label="Participant" data-bind="cfg.pid">${pids.map(p => `<option value="${p}" ${p === c.pid ? 'selected' : ''}>${p}</option>`).join('')}</select><p class="hint">Son profil est repris. Utile pour goûter un second vin.</p>` : `<p class="hint">Aucun participant dans cette session pour l’instant.</p>`) : ''}
+    </div>
+    <div class="field"><label for="f-wine">Vin dégusté</label>
+      <input id="f-wine" type="text" autocomplete="off" data-bind="cfg.wineName" value="${esc(c.wineName)}" placeholder="Appellation, millésime, cuvée"></div>
+    <div class="field"><span class="lbl">Type de vin</span>${chipsFor('cfg', 'wineType', WINE_TYPES.map(t => [t, t]), c.wineType)}</div>
+    <div class="field"><span class="lbl">Langue du participant</span>${chipsFor('cfg', 'lang', LANGS, c.lang)}<p class="hint">Le participant peut aussi la changer sur l’écran d’accueil. Le questionnaire est traduit en français, anglais et chinois traditionnel (Hong Kong).</p></div>
+    <div class="field"><span class="lbl">Devise de la question de prix</span>${chipsFor('cfg', 'cur', CURRENCIES.map(x => [x, CUR_SYM[x]]), c.cur)}<p class="hint">La disposition à payer est analysée devise par devise : ne mélangez pas les monnaies au sein d’une même session.</p></div>
+    <div class="field"><label for="f-org">Nom affiché dans le consentement e-mail</label>
+      <input id="f-org" type="text" autocomplete="off" data-bind="cfg.org" value="${esc(c.org)}"></div>
+    <div class="field"><span class="lbl">Séries témoin (aucun verre traité)</span>
+      <div class="chips" role="group">
+        ${[[5, '1 série sur 5'], [3, '1 série sur 3'], [0, 'Aucune']].map(([v, l]) => chip(`data-act="cfg" data-k="share" data-v="${v}"`, l, c.share === v)).join('')}
+      </div>
+      <p class="hint">Sans série témoin, on ne peut pas distinguer l’effet du dispositif de l’effet de suggestion. Recommandé : 1 sur 5.</p></div>
+    ${S.err ? `<p class="err" role="alert">${esc(S.err)}</p>` : ''}
+    <button type="button" class="btn lg" data-act="prepare">Préparer la dégustation</button>
+  </section>
+  <section class="blk">
+    <h2>Cette session</h2>
+    <p><b class="num">${done.length}</b> dégustation${done.length > 1 ? 's' : ''} terminée${done.length > 1 ? 's' : ''} <span class="sub">(${nT} test${nT > 1 ? 's' : ''}, ${nC} témoin${nC > 1 ? 's' : ''})</span></p>
+    ${done.length ? `<p><button type="button" class="btn ghost" data-act="tab" data-v="res">Voir les résultats</button></p>` : '<p class="hint">Les résultats se calculent dès la première dégustation terminée.</p>'}
+  </section>`;
+}
+
+function viewPrep(){
+  const R = S.run, r = R.rec, ctl = r.arm === 'control';
+  const tagFor = s => (!ctl && s === 'T') ? '<span class="tag t">Traité</span>' : '<span class="tag u">Non traité</span>';
+  const rows = (codes, samples) => codes.map((c, i) => `<li class="prow">${dot(c, 'sm')}<b>${TX.fr.col[c]}</b><span class="ptxt">${POS[codes.length][i]}</span>${tagFor(samples[i])}</li>`).join('');
+  return `
+  <div class="banner alert" role="alert">Fiche réservée à l’animateur : ne la montrez pas au participant.</div>
+  <section class="card">
+    <div><h1>Fiche de préparation</h1>
+    <p class="lead" style="margin-top:8px"><b>${esc(r.pid)}</b> · ${esc(r.wine.name)} (${esc(r.wine.type)}) · ${ctl ? '<span class="tag bad">Série témoin</span>' : '<span class="tag neutral">Série test</span>'}</p></div>
+    ${ctl ? `<div class="banner demo">Série témoin : ne traitez aucun verre. Faites sur les 5 verres le même geste neutre (liège sans le dispositif).</div>` : `<div class="banner info">Traitez uniquement les verres marqués « Traité ». Faites le même geste, avec un liège neutre, sur les verres « Non traité ».</div>`}
+    <div class="field"><h3>Partie 1 · trois verres, servis ensemble</h3><p class="hint">Alignez-les dans cet ordre, de gauche à droite. Collez la pastille de la couleur indiquée sous le pied de chaque verre.</p>
+      <ul class="plist">${rows(r.tri.codes, r.tri.samples)}</ul></div>
+    <div class="field"><h3>Partie 2 · deux verres, servis après la partie 1</h3><p class="hint">Servez-les quand le participant a validé la partie 1 (l’écran vous l’indique).</p>
+      <ul class="plist">${rows(r.pref.codes, r.pref.samples)}</ul></div>
+    <p class="hint">Même bouteille, même température, même volume, verres identiques. Servez sans commentaire.</p>
+    <div class="row"><button type="button" class="btn" style="flex:1;min-height:56px" data-act="ready" ${S.busy ? 'disabled' : ''}>C’est prêt : afficher le QR code</button><button type="button" class="btn quiet" data-act="cancelRun">Annuler</button></div>
+  </section>`;
+}
+
+/* ---------- parcours participant ---------- */
+function stepsFor(R){
+  const s = ['welcome'];
+  if (R.needProfile) s.push('profile');
+  s.push('tri', 'wait2', 'pref', 'reveal');
+  if (R.rec.arm !== 'control') s.push('post');
+  s.push('contact', 'thanks');
+  return s;
+}
+/* barre de progression identique pour tous (ne révèle pas la série) */
+function progressSteps(R){ const s = ['welcome']; if (R.needProfile) s.push('profile'); s.push('tri', 'wait2', 'pref', 'reveal', 'post', 'contact'); return s; }
+function canNext(){
+  const R = S.run; if (!R) return true; const r = R.rec;
+  switch (R.step){
+    case 'profile': return !!(r.profile.seg && r.profile.age && r.profile.freq && r.profile.like);
+    case 'tri': return r.tri.pick != null && !!r.tri.conf;
+    case 'pref': return r.pref.pick != null && !!r.pref.strength && typeof r.pref.scores[0] === 'number' && typeof r.pref.scores[1] === 'number' && !!r.pref.diff && r.pref.soft != null;
+    case 'post': return !!(r.post.reuse && r.post.gift) && typeof r.post.curious === 'number' && typeof r.post.wtp === 'number' && r.post.wtp >= 0;
+    case 'contact': { const em = (R.email || '').trim(); return !em || (EMAIL_RE.test(em) && !!R.consent); }
+    default: return true;
+  }
+}
+function syncNext(){
+  const b = $('#btnNext'); if (b) b.disabled = !canNext() || !!(S.run && S.run.busy);
+  if (S.run && S.run.step === 'contact'){
+    const em = (S.run.email || '').trim(), bad = !!em && !EMAIL_RE.test(em);
+    const m = $('#k-msg'), n = $('#k-need');
+    if (m) m.hidden = !bad; if (n) n.hidden = !(em && !bad && !S.run.consent);
+  }
+}
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const olist = (T, grp, keys) => keys.map(k => [k, T.o[grp][k]]);
+function viewParticipant(){
+  const R = S.run, r = R.rec, T = TXL(r.lang), steps = progressSteps(R), i = steps.indexOf(R.step), N = steps.length;
+  const cs = CUR_SYM[(r.post && r.post.cur) || 'EUR'];
+  const head = `<header class="ptop"><div class="wrap pbar"><b>${T.brand}</b><span>${R.step === 'thanks' ? T.done : T.stepOf(Math.max(i, 0) + 1, N)}</span></div><div class="prog" aria-hidden="true"><i style="width:${R.step === 'thanks' ? 100 : Math.round((i + 1) / N * 100)}%"></i></div></header>`;
+  const next = (label) => `<button type="button" class="btn lg" id="btnNext" data-act="next" disabled>${label || T.cont}</button>`;
+  const opt = `<span class="sub">${T.opt}</span>`;
+  let body = '';
+  switch (R.step){
+    case 'welcome':
+      body = `<div class="chips" role="group" aria-label="Language">${LANGS.map(([k, l]) => chip(`data-act="lang" data-v="${k}"`, l, r.lang === k)).join('')}</div>
+        <h1>${T.w_h}</h1>
+        <p>${T.w_p}</p>
+        <ol class="steplist">${T.w_l.map(x => `<li>${x}</li>`).join('')}</ol>
+        <p class="sub" style="font-size:14px">${T.w_f}</p>
+        <button type="button" class="btn lg" data-act="next">${T.w_b}</button>`;
+      break;
+    case 'profile':
+      body = `<h1>${T.pf_h}</h1>
+        <div class="field"><span class="lbl">${T.pf_seg}</span>${chipsFor('pf', 'seg', olist(T, 'seg', SEGS.map(x => x[0])), r.profile.seg)}</div>
+        <div class="field"><span class="lbl">${T.pf_age}</span>${chipsFor('pf', 'age', AGES.map(a => [a, a]), r.profile.age)}</div>
+        <div class="field"><span class="lbl">${T.pf_freq}</span>${chipsFor('pf', 'freq', olist(T, 'freq', FREQS.map(x => x[0])), r.profile.freq)}</div>
+        <div class="field"><span class="lbl">${T.pf_like}</span>${scale('pf', 'data-k="like"', 5, r.profile.like)}<div class="ends"><span>${T.lo5}</span><span>${T.hi5}</span></div></div>
+        ${next()}`;
+      break;
+    case 'tri':
+      body = `<div><h1>${T.t_h}</h1><p style="margin-top:8px">${T.t_p}</p><p class="hint">${T.t_hint}</p></div>
+        ${glasses(T, r.tri.codes, r.tri.pick, 'triPick')}
+        ${r.tri.pick != null ? `<div class="field"><span class="lbl">${T.t_conf}</span>${chipsFor('conf', 'conf', olist(T, 'conf', CONF.map(x => x[0])), r.tri.conf)}</div>
+        <div class="field"><span class="lbl">${T.t_attr} ${opt}</span><div class="chips" role="group">${ATTRS.map(([k]) => chip(`data-act="attr" data-v="${k}"`, T.o.attr[k], r.tri.attrs.includes(k))).join('')}</div></div>` : ''}
+        ${next(T.t_b)}`;
+      break;
+    case 'wait2':
+      body = `<h1>${T.x_h}</h1>
+        <p>${T.x_p}</p>
+        <button type="button" class="btn lg" data-act="next">${T.x_b}</button>`;
+      break;
+    case 'pref':
+      body = `<div><h1>${T.p_h}</h1><p style="margin-top:8px">${T.p_p}</p><p class="hint">${T.p_hint}</p></div>
+        ${glasses(T, r.pref.codes, r.pref.pick, 'prefPick')}
+        ${r.pref.pick != null ? `
+        <div class="field"><span class="lbl">${T.p_str}</span>${chipsFor('strength', 'strength', olist(T, 'strength', STRENGTH.map(x => x[0])), r.pref.strength)}</div>
+        ${[0, 1].map(k => `<div class="field"><span class="lbl">${T.p_note(nm(r.pref.codes[k], r.lang))}</span>${scale('score', 'data-i="' + k + '"', 7, r.pref.scores[k])}<div class="ends"><span>${T.p_lo}</span><span>${T.p_hi}</span></div></div>`).join('')}
+        <div class="field"><span class="lbl">${T.p_diff}</span>${chipsFor('diff', 'diff', olist(T, 'diff', DIFFQ.map(x => x[0])), r.pref.diff)}</div>
+        <div class="field"><span class="lbl">${T.p_soft}</span><div class="chips" role="group">${r.pref.codes.map((c, k) => `<button type="button" class="chip" data-act="soft" data-v="${k}" aria-pressed="${r.pref.soft === k}">${dot(c, 'xs')}${esc(T.col[c])}</button>`).join('')}</div><p class="hint">${T.p_softhint}</p></div>` : ''}
+        ${next(T.p_b)}`;
+      break;
+    case 'reveal': {
+      if (r.arm === 'control'){
+        body = `<h1>${T.c_h}</h1>
+          <p>${T.c_p1}</p>
+          <p>${T.c_p2}</p>
+          <button type="button" class="btn lg" data-act="next">${T.cont}</button>`;
+      } else {
+        const tr = r.tri, pf = r.pref, odd = T.col[tr.codes[tr.odd]], found = tr.pick === tr.odd;
+        const pT = T.col[pf.codes[pf.samples.indexOf('T')]], liked = prefPickedT(r);
+        body = `<h1>${T.r_h}</h1>
+          <div class="field"><h3>${T.r_1}</h3>
+            <div class="revtbl">${tr.codes.map((c, k) => `<div class="rev">${dot(c, 'sm')}<b>${esc(T.col[c])}</b>${tr.samples[k] === 'T' ? `<span class="tag t">${T.r_with}</span>` : `<span class="tag u">${T.r_without}</span>`}${k === tr.pick ? `<span class="sub">${T.r_yours}</span>` : ''}</div>`).join('')}</div>
+            <p>${T.r_odd(odd, found)}</p></div>
+          <div class="field"><h3>${T.r_2}</h3>
+            <p>${T.r_pref(pT, liked)}</p></div>
+          <button type="button" class="btn lg" data-act="next">${T.r_b}</button>`;
+      }
+      break;
+    }
+    case 'post':
+      body = `<h1>${T.o_h}</h1>
+        <div class="field"><span class="lbl">${T.o_reuse}</span>${chipsFor('reuse', 'reuse', olist(T, 'reuse', REUSE.map(x => x[0])), r.post.reuse)}</div>
+        <div class="field"><label for="f-wtp">${T.o_wtp(cs)}</label>
+          <input id="f-wtp" type="number" inputmode="decimal" min="0" step="1" data-bind="run.rec.post.wtp" value="${r.post.wtp == null ? '' : r.post.wtp}" placeholder="${T.o_wtp_ph}"></div>
+        <div class="field"><span class="lbl">${T.o_gift}</span>${chipsFor('gift', 'gift', olist(T, 'gift', GIFT.map(x => x[0])), r.post.gift)}</div>
+        <div class="field"><span class="lbl">${T.o_cur}</span>${scale('curious', '', 5, r.post.curious)}<div class="ends"><span>${T.lo5}</span><span>${T.hi5}</span></div></div>
+        <div class="field"><label for="f-com">${T.o_com} ${opt}</label><textarea id="f-com" data-bind="run.rec.post.comment">${esc(r.post.comment || '')}</textarea></div>
+        ${next()}`;
+      break;
+    case 'contact': {
+      const em = (R.email || '').trim(), bad = em && !EMAIL_RE.test(em);
+      body = `<h1>${T.k_h}</h1>
+        <p>${T.k_p}</p>
+        <div class="field"><label for="f-mail">${T.k_mail} ${opt}</label>
+          <input id="f-mail" type="email" inputmode="email" autocomplete="email" data-bind="run.email" value="${esc(R.email || '')}" placeholder="name@example.com"></div>
+        <div class="field"><button type="button" class="chip" data-act="consent" aria-pressed="${R.consent ? 'true' : 'false'}" style="border-radius:14px;text-align:left;line-height:1.4;padding:10px 14px">${R.consent ? '☑' : '☐'} ${esc(T.k_cons(S.cfg.org || 'Wine Optimizer'))}</button></div>
+        <p class="err" id="k-msg" role="alert" ${bad ? '' : 'hidden'}>${T.k_bad}</p>
+        <p class="hint" id="k-need" ${(em && !bad && !R.consent) ? '' : 'hidden'}>${T.k_need}</p>
+        ${next(T.k_b)}`;
+      break;
+    }
+    case 'thanks':
+      body = `<h1>${R.already ? T.already : T.th_h}</h1>
+        <p>${T.th_p}</p>`;
+      break;
+  }
+  const errBox = R.error ? `<div class="banner alert" role="alert">${esc(R.error)}</div>` : '';
+  return `${head}<main class="wrap" lang="${HTML_LANG[r.lang] || 'fr'}"><section class="card pmain">${body}${errBox}</section></main>`;
+}
+
+
+
+/* ---------- actions ---------- */
+const uid = () => (typeof crypto !== 'undefined' && crypto.randomUUID) ? crypto.randomUUID() : 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => { const r = Math.floor(rand01() * 16); return (c === 'x' ? r : (r & 3 | 8)).toString(16); });
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+const TESTER = (() => { try { const t = new URLSearchParams(location.search).get('t'); return t && UUID_RE.test(t) ? t.toLowerCase() : null; } catch (e) { return null; } })();
+const testerUrl = id => (CFG.publicUrl ? CFG.publicUrl.replace(/\/+$/, '/') : location.origin + location.pathname) + '?t=' + id;
+let WATCH = null;
+
+async function prepare(){
+  const c = S.cfg;
+  if (!c.session.trim() || !c.wineName.trim()){ S.err = 'Renseignez la session et le vin dégusté.'; return render(); }
+  if (c.pidMode === 'existing' && !c.pid){ S.err = 'Aucun participant à reprendre : choisissez « Nouveau participant ».'; return render(); }
+  S.err = '';
+  const inS = sessionRecs(), a = makeAssignment(inS, { session: c.session.trim(), share: c.share });
+  let pid, round = 1, profile = { seg: null, age: null, freq: null, like: null }, needProfile = true;
+  if (c.pidMode === 'existing'){
+    pid = c.pid; const prev = inS.filter(r => r.pid === pid);
+    round = prev.length + 1;
+    const last = prev.filter(r => r.profile && r.profile.seg).pop();
+    if (last){ profile = Object.assign({}, last.profile); needProfile = false; }
+  } else pid = nextPid(inS);
+  const rec = {
+    id: uid(), session: c.session.trim(), pid, round, status: 'assigned', createdAt: new Date().toISOString(),
+    lang: c.lang, cur: c.cur, org: c.org, arm: a.arm, wine: { name: c.wineName.trim(), type: c.wineType }, profile, tri: a.tri, pref: a.pref,
+    post: a.arm === 'test' ? { cur: c.cur, reuse: null, wtp: null, gift: null, curious: null, comment: '' } : null
+  };
+  S.run = { rec, step: 'prep', needProfile };
+  render(); window.scrollTo(0, 0);
+}
+async function readyRun(){
+  const R = S.run; if (!R || S.busy) return;
+  S.busy = true; render();
+  try { await store.put(R.rec); R.step = 'qr'; R.status = 'assigned'; startWatch(); }
+  catch (e) { toast('Enregistrement impossible : ' + e.message); }
+  S.busy = false; render(); window.scrollTo(0, 0);
+}
+function startWatch(){
+  clearInterval(WATCH);
+  WATCH = setInterval(async () => {
+    const R = S.run;
+    if (!R || R.step !== 'qr'){ clearInterval(WATCH); return; }
+    try {
+      const rows = await API.select('tastings', 'select=status&id=eq.' + R.rec.id);
+      const st = rows[0] ? rows[0].status : null;
+      if (st && st !== R.status){ R.status = st; if (st === 'complete') store.pull(true); render(); }
+    } catch (e) {}
+  }, 3000);
+}
+function download(fn, text){
+  const b = new Blob([text], { type: 'text/csv;charset=utf-8' }), a = document.createElement('a');
+  a.href = URL.createObjectURL(b); a.download = fn; document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(a.href), 2000); toast('Fichier téléchargé');
+}
+function exportCsv(){ download('two-glass-test_' + new Date().toISOString().slice(0, 10) + '.csv', toCsv(S.records.slice().sort((a, b) => (a.createdAt || '').localeCompare(b.createdAt || '')))); }
+function exportContacts(){ download('two-glass-contacts_' + new Date().toISOString().slice(0, 10) + '.csv', toContactsCsv(S.contacts)); }
+async function doLogin(){
+  const e = ($('#f-email').value || '').trim(), p = $('#f-pw').value || '';
+  S.loginEmail = e; S.busy = true; S.loginErr = ''; render();
+  try {
+    await API.login(e, p);
+    const ok = await API.rpc('is_staff');
+    if (ok !== true){ API.logout(); throw new Error('Ce compte n’est pas autorisé. Ajoutez son adresse dans la table « staff » (voir le mode d’emploi).'); }
+    S.auth = API.auth; S.busy = false; render(); store.init(); return;
+  } catch (err) { S.auth = null; S.loginErr = /invalid|credentials/i.test(err.message) ? 'E-mail ou mot de passe incorrect.' : err.message; }
+  S.busy = false; render();
+}
+const wipe = () => { clearInterval(WATCH); store.timer && clearInterval(store.timer); };
+
+/* ---------- parcours du testeur sur son téléphone ---------- */
+function applyReveal(rec, v){
+  rec.arm = v.arm; rec.tri.samples = v.triSamples; rec.tri.odd = v.odd; rec.pref.samples = v.prefSamples;
+  if (v.triPick != null) rec.tri.pick = v.triPick;
+  if (v.prefPick != null) rec.pref.pick = v.prefPick;
+}
+async function loadTester(){
+  S.tstate = 'loading'; S.run = null; render();
+  try {
+    const g = await API.rpc('tester_get', { p_id: TESTER });
+    if (!g){ S.tstate = 'notfound'; return render(); }
+    const rec = {
+      id: TESTER, lang: LANGS.some(l => l[0] === g.lang) ? g.lang : 'fr', cur: g.cur, org: g.org, arm: null, wine: {},
+      profile: { seg: null, age: null, freq: null, like: null },
+      tri: { codes: g.triCodes, pick: null, conf: null, attrs: [] },
+      pref: { codes: g.prefCodes, pick: null, strength: null, scores: [null, null], diff: null, soft: null },
+      post: { cur: g.cur, reuse: null, wtp: null, gift: null, curious: null, comment: '' }
+    };
+    S.run = { rec, step: 'welcome', needProfile: g.needProfile, t0: Date.now() };
+    if (g.status === 'tri_done') S.run.step = 'wait2';
+    else if (g.status === 'pref_done'){ applyReveal(rec, g.reveal); S.run.step = 'reveal'; }
+    else if (g.status === 'complete'){ S.run.step = 'thanks'; S.run.already = true; }
+    S.tstate = 'ok';
+  } catch (e) { S.tstate = 'err'; S.terr = e.message; }
+  render();
+}
+async function testerNext(){
+  const R = S.run, r = R.rec; if (R.busy) return;
+  const steps = stepsFor(R), nextStep = steps[steps.indexOf(R.step) + 1];
+  R.busy = true; R.error = ''; render();
+  try {
+    if (R.step === 'tri') await API.rpc('tester_submit', { p_id: TESTER, p_stage: 'tri', p_data: { profile: R.needProfile ? r.profile : null, pick: r.tri.pick, conf: r.tri.conf, attrs: r.tri.attrs } });
+    else if (R.step === 'pref'){
+      const v = await API.rpc('tester_submit', { p_id: TESTER, p_stage: 'pref', p_data: { pick: r.pref.pick, strength: r.pref.strength, scores: r.pref.scores, diff: r.pref.diff, soft: r.pref.soft } });
+      applyReveal(r, v);
+    } else if (R.step === 'contact'){
+      const em = (R.email || '').trim();
+      if (em && EMAIL_RE.test(em) && R.consent){ try { await API.rpc('tester_contact', { p_id: TESTER, p_email: em, p_lang: r.lang }); } catch (e) {} }
+      await API.rpc('tester_submit', { p_id: TESTER, p_stage: 'finish', p_data: Object.assign({ lang: r.lang, duration: Math.round((Date.now() - R.t0) / 1000) }, r.arm === 'test' ? r.post : {}) });
+    }
+    R.step = R.step === 'reveal' && r.arm === 'control' ? 'contact' : nextStep;
+  } catch (e) {
+    if (/bad_state/.test(e.message)){ return loadTester(); }
+    R.error = TXL(r.lang).err;
+  }
+  R.busy = false; render(); window.scrollTo(0, 0);
+}
+function viewTester(){
+  if (S.tstate === 'ok' && S.run) return viewParticipant();
+  const msg = S.tstate === 'notfound' ? ['Ce lien n’est pas valide.', 'This link is not valid.', '此連結無效。']
+    : S.tstate === 'err' ? ['Connexion impossible. Vérifiez votre connexion Internet.', 'Cannot connect. Please check your internet connection.', '無法連線，請檢查網絡連線。'] : ['Chargement…', 'Loading…', '載入中…'];
+  return `<main class="wrap"><section class="card pmain"><h1>Two-Glass Test</h1>${msg.map(m => `<p>${m}</p>`).join('')}${S.tstate === 'err' ? '<button type="button" class="btn lg" data-act="tretry">↻</button>' : ''}</section></main>`;
+}
+
+/* ---------- connexion animateur ---------- */
+function viewSetup(){
+  return `<main class="wrap"><section class="card"><h1>Configuration à terminer</h1>
+    <p class="lead">Le fichier <b>config.js</b> ne contient pas encore l’adresse de votre projet Supabase. Suivez le mode d’emploi (README), puis rechargez cette page.</p></section></main>`;
+}
+function viewLogin(){
+  return `<main class="wrap" style="max-width:460px"><section class="card">
+    <div class="brand">${logo}<span class="brand-t">Two-Glass Test</span></div>
+    <h1>Espace animateur</h1>
+    <form id="loginForm" class="card" style="padding:0;border:0;background:none;box-shadow:none;gap:14px">
+      <div class="field"><label for="f-email">E-mail</label><input id="f-email" type="email" autocomplete="username" inputmode="email" value="${esc(S.loginEmail || '')}" required></div>
+      <div class="field"><label for="f-pw">Mot de passe</label><input id="f-pw" type="password" autocomplete="current-password" required></div>
+      ${S.loginErr ? `<p class="err" role="alert">${esc(S.loginErr)}</p>` : ''}
+      <button type="submit" class="btn lg" ${S.busy ? 'disabled' : ''}>${S.busy ? 'Connexion…' : 'Se connecter'}</button>
+    </form></section></main>`;
+}
+
+/* ---------- écran QR code (animateur) ---------- */
+function sheetHtml(r){
+  const ctl = r.arm === 'control';
+  const tagFor = s => (!ctl && s === 'T') ? '<span class="tag t">Traité</span>' : '<span class="tag u">Non traité</span>';
+  const rows = (codes, samples) => codes.map((c, i) => `<li class="prow">${dot(c, 'sm')}<b>${TX.fr.col[c]}</b><span class="ptxt">${POS[codes.length][i]}</span>${tagFor(samples[i])}</li>`).join('');
+  return `<div class="field"><h3>Partie 1</h3><ul class="plist">${rows(r.tri.codes, r.tri.samples)}</ul></div><div class="field"><h3>Partie 2</h3><ul class="plist">${rows(r.pref.codes, r.pref.samples)}</ul></div>`;
+}
+function viewQR(){
+  const R = S.run, r = R.rec, url = testerUrl(r.id), st = R.status || 'assigned';
+  const label = { assigned: ['En attente : le testeur scanne le QR code', 'warn'], tri_done: ['Partie 1 envoyée', 'ok'], pref_done: ['Partie 2 envoyée, dernières questions en cours', 'ok'], complete: ['Terminé : réponses enregistrées', 'ok'] }[st] || [st, 'warn'];
+  return `
+  <section class="card qrbox">
+    <h1>Questionnaire du testeur</h1>
+    <p class="lead"><b>${esc(r.pid)}</b> · ${esc(r.wine.name)} · ${esc(LANGS.find(l => l[0] === r.lang)[1])}</p>
+    ${st === 'complete' ? '' : QRLIB(url)}
+    <p class="stat"><span class="pulse ${label[1] === 'ok' ? 'ok' : ''}"></span>${label[0]}</p>
+    ${st === 'tri_done' ? '<div class="banner alert" role="alert"><b>Servez maintenant les deux verres de la partie 2</b>, puis le testeur continue sur son téléphone.</div>' : ''}
+    ${st === 'assigned' ? '<p class="hint">Le testeur ouvre l’appareil photo de son téléphone et vise ce code. Aucune application à installer. Ne montrez pas l’écran de préparation.</p>' : ''}
+    <div class="row" style="justify-content:center">
+      ${st === 'complete' ? '' : `<button type="button" class="btn ghost" data-act="copyLink" data-u="${esc(url)}">Copier le lien</button>`}
+      <button type="button" class="btn" data-act="newRun">${st === 'complete' ? 'Nouvelle dégustation' : 'Terminé, nouvelle dégustation'}</button>
+    </div>
+    ${st === 'assigned' ? '<button type="button" class="btn quiet" data-act="cancelQR">Annuler cette dégustation</button>' : ''}
+  </section>
+  <section class="blk"><details><summary><b>Rappel de la fiche de préparation</b></summary>${sheetHtml(r)}</details></section>`;
+}
+
+function act(name, d){
+  const R = S.run, r = R && R.rec;
+  switch (name){
+    case 'tab': S.tab = d.v; S.csv = null; S.confirmDel = null; S.err = ''; render(); window.scrollTo(0, 0); return;
+    case 'cfg': S.cfg[d.k] = d.k === 'share' ? Number(d.v) : d.v; LS.set('tg_cfg', S.cfg); break;
+    case 'prepare': return prepare();
+    case 'cancelRun': S.run = null; break;
+    case 'logout': wipe(); API.logout(); S.auth = null; S.run = null; S.dbRecords = []; S.contacts = []; break;
+    case 'newRun': clearInterval(WATCH); S.run = null; S.tab = 'run'; break;
+    case 'cancelQR': clearInterval(WATCH); store.del(r.id); S.run = null; S.tab = 'run'; break;
+    case 'copyLink': copyText(d.u); return;
+    case 'tretry': return loadTester();
+    case 'ready': return readyRun();
+    case 'next': {
+      return testerNext();
+    }
+    case 'lang': r.lang = d.v; break;
+    case 'soft': r.pref.soft = Number(d.v); break;
+    case 'consent': R.consent = !R.consent; break;
+    case 'curSel': S.flt.cur = d.v; break;
+    case 'conv': S.flt.conv = d.v === '1'; break;
+    case 'pf': r.profile[d.k] = d.k === 'like' ? Number(d.v) : d.v; break;
+    case 'triPick': r.tri.pick = Number(d.v); break;
+    case 'conf': r.tri.conf = d.v; break;
+    case 'attr': {
+      const a = r.tri.attrs;
+      if (d.v === 'nsp') r.tri.attrs = a.includes('nsp') ? [] : ['nsp'];
+      else { const n = a.filter(x => x !== 'nsp'); r.tri.attrs = n.includes(d.v) ? n.filter(x => x !== d.v) : n.concat(d.v); }
+      break;
+    }
+    case 'prefPick': r.pref.pick = Number(d.v); break;
+    case 'strength': r.pref.strength = d.v; break;
+    case 'score': r.pref.scores[Number(d.i)] = Number(d.v); break;
+    case 'diff': r.pref.diff = d.v; break;
+    case 'reuse': r.post.reuse = d.v; break;
+    case 'gift': r.post.gift = d.v; break;
+    case 'curious': r.post.curious = Number(d.v); break;
+    case 'demo': S.demo = d.v === '1'; if (S.demo && !S.demoRecs) S.demoRecs = demoRecords(); break;
+    case 'first': S.flt.first = !S.flt.first; break;
+    case 'copy': copyText(d.t ? document.getElementById(d.t).textContent : ''); return;
+    case 'csv': return exportCsv();
+    case 'csvCopy': copyText(toCsv(S.records)); return;
+    case 'del': S.confirmDel = d.id; break;
+    case 'delNo': S.confirmDel = null; break;
+    case 'delYes': store.del(d.id); S.confirmDel = null; toast('Supprimé'); return;
+    case 'csvContacts': return exportContacts();
+    case 'copyContacts': copyText(toContactsCsv(S.contacts)); return;
+  }
+  render();
+}
+document.addEventListener('submit', e => { e.preventDefault(); if (e.target.id === 'loginForm') doLogin(); });
+document.addEventListener('click', e => { const b = e.target.closest('[data-act]'); if (b) act(b.dataset.act, b.dataset); });
+document.addEventListener('input', e => {
+  const t = e.target; if (!t.dataset || !t.dataset.bind) return;
+  setPath(t.dataset.bind, t.type === 'number' ? (t.value === '' ? null : Number(t.value)) : t.value);
+  syncNext();
+});
+document.addEventListener('change', e => {
+  const t = e.target; if (!t.dataset || !t.dataset.bind) return;
+  setPath(t.dataset.bind, t.type === 'number' ? (t.value === '' ? null : Number(t.value)) : t.value);
+  syncNext();
+  if (t.dataset.render) render();
+});
+
+/* ---------- onglet Résultats ---------- */
+function gauge(o, chance, chanceLabel){
+  if (o.r == null) return '';
+  const p = v => (v * 100).toFixed(1) + '%';
+  return `<div class="gauge" role="img" aria-label="Valeur observée ${pc(o.r)}, intervalle de confiance ${pc(o.lo)} à ${pc(o.hi)}, hasard ${pc(chance)}"><div class="g-track"></div><div class="g-chance" style="left:${p(chance)}"><span>${chanceLabel}</span></div><div class="g-ci" style="left:${p(o.lo)};width:${((o.hi - o.lo) * 100).toFixed(1)}%"></div><div class="g-dot" style="left:${p(o.r)}"></div></div><div class="g-axis"><span>0 %</span><span>50 %</span><span>100 %</span></div>`;
+}
+const vtag = (v, p) => `<span class="tag ${v.tone}">${v.label}</span>${p != null ? ` <span class="sub">${fmtP(p)}</span>` : ''}`;
+function rateCell(o){ return o.n ? `${pc(o.r)} <span class="sub">${o.k}/${o.n}</span>` : '–'; }
+function groupTable(rows, first){
+  if (!rows.length) return '<p class="hint">Aucune donnée.</p>';
+  return `<div class="tw"><table><thead><tr><th>${first}</th><th class="r">Tests</th><th>Détection</th><th>Préférence (traité)</th><th class="r">Prix médian</th></tr></thead><tbody>${rows.map(g => `<tr class="${g.n < 10 ? 'faint' : ''}"><td>${esc(g.label)}${g.n && g.n < 10 ? ' <span class="sub">indicatif</span>' : ''}</td><td class="r num">${g.n}</td><td class="num">${rateCell(g.det)}</td><td class="num">${rateCell(g.pref)}</td><td class="r num">${eur(g.wtp)}</td></tr>`).join('')}</tbody></table></div>`;
+}
+function sentences(a){
+  const out = [], d = a.det.T, p = a.pref.T;
+  if (d.n) out.push(`Lors d’un test triangulaire en aveugle réalisé sur ${d.n} dégustations, ${d.k} personnes (${pc(d.r)}) ont identifié le verre différent, contre ${pc(1 / 3)} attendus par hasard (IC 95 % : ${pc(d.lo)} à ${pc(d.hi)} ; ${fmtP(d.p)}). ${d.p < 0.05 ? 'Ce résultat est statistiquement supérieur au hasard.' : 'Ce résultat n’est pas statistiquement supérieur au hasard.'}`);
+  if (p.n) out.push(`Dans un test de préférence en aveugle (${p.n} dégustations), ${pc(p.r)} des participants ont préféré le verre traité (IC 95 % : ${pc(p.lo)} à ${pc(p.hi)} ; ${fmtP(p.p)}). ${p.p < 0.05 ? 'L’écart avec une répartition au hasard (50 %) est significatif.' : 'L’écart avec une répartition au hasard (50 %) n’est pas significatif.'}`);
+  const sf = a.soft.T;
+  if (sf.n) out.push(`Dans le même test en aveugle (${sf.n} dégustations), ${pc(sf.r)} des participants ont jugé le verre traité plus doux et moins agressif en bouche (IC 95 % : ${pc(sf.lo)} à ${pc(sf.hi)} ; ${fmtP(sf.p)}). ${sf.p < 0.05 ? 'L’écart avec une répartition au hasard (50 %) est significatif.' : 'L’écart avec une répartition au hasard (50 %) n’est pas significatif.'}`);
+  if (a.det.C.n >= 5) out.push(`Dans les séries témoin, où aucun verre n’était traité (${a.det.C.n} dégustations), ${pc(a.det.C.r)} des participants ont désigné le « verre différent » et ${pc(a.claim.C.r)} ont déclaré percevoir une différence, contre ${pc(a.claim.T.r)} dans les séries test.`);
+  return out;
+}
+function viewRes(){
+  const base = S.demo ? S.demoRecs : S.records;
+  const flt = S.demo ? { session: 'all', type: 'all', first: false } : S.flt;
+  const all = analyze(base, {});
+  const rates = flt.conv === false ? null : S.cfg.rates;
+  const a = analyze(base, Object.assign({}, flt, { rates: S.demo ? null : rates }));
+  CUR = a.cur;
+  const demoBar = S.demo ? `<div class="banner demo" role="status"><b>Exemple simulé.</b> Ces chiffres sont inventés pour montrer à quoi ressemblera le rapport. Ils ne mesurent rien.</div>` : '';
+  const toggle = `<div class="chips" role="group" aria-label="Source des données">${chip('data-act="demo" data-v="0"', 'Mes données', !S.demo)}${chip('data-act="demo" data-v="1"', 'Exemple simulé', S.demo)}</div>`;
+  if (!a.n){
+    return `<section class="card"><h1>Résultats</h1>${toggle}${S.demo ? '' : `<p class="lead">Aucune dégustation terminée${(flt.session !== 'all' || flt.type !== 'all') ? ' avec ces filtres' : ''} pour l’instant. Lancez-en une depuis l’onglet Dégustation, ou affichez l’exemple simulé pour voir le rapport.</p>`}</section>`;
+  }
+  const filters = S.demo ? '' : `<div class="filters">
+    <div class="field"><label for="f-fs">Session</label><select id="f-fs" data-bind="flt.session" data-render="1"><option value="all">Toutes</option>${all.sessions.map(s => `<option value="${esc(s)}" ${flt.session === s ? 'selected' : ''}>${esc(s)}</option>`).join('')}</select></div>
+    <div class="field"><label for="f-ft">Type de vin</label><select id="f-ft" data-bind="flt.type" data-render="1"><option value="all">Tous</option>${WINE_TYPES.map(t => `<option value="${t}" ${flt.type === t ? 'selected' : ''}>${t}</option>`).join('')}</select></div>
+    <div class="field" style="flex:none;min-width:0">${chip('data-act="first"', 'Une dégustation par participant', flt.first)}</div>
+    ${a.curs.length > 1 || (a.curs[0] && a.curs[0] !== 'EUR') ? `<div class="field" style="flex:none;min-width:0"><span class="lbl">Prix affichés</span><div class="chips" role="group">${chip('data-act="conv" data-v="1"', 'En € (converti)', flt.conv !== false)}${chip('data-act="conv" data-v="0"', 'Devise d’origine', flt.conv === false)}</div></div>` : ''}
+    ${flt.conv === false && a.curs.length > 1 ? `<div class="field" style="flex:none;min-width:0"><span class="lbl">Devise</span><div class="chips" role="group">${a.curs.map(c => chip(`data-act="curSel" data-v="${c}"`, CUR_SYM[c], a.cur === c)).join('')}</div></div>` : ''}</div>
+    ${flt.conv !== false && a.curs.some(c => c !== 'EUR') ? `<div class="rates"><span class="sub">Taux de conversion utilisés (1 unité = … €). Valeurs indicatives, à ajuster :</span> ${a.curs.filter(c => c !== 'EUR').map(c => `<label class="rt">${CUR_SYM[c]} <input type="number" inputmode="decimal" step="0.01" min="0" data-bind="cfg.rates.${c}" data-render="1" value="${S.cfg.rates[c]}" aria-label="Taux ${c} vers EUR"></label>`).join(' ')}</div>` : ''}`;
+  const dT = a.det.T, pT = a.pref.T, vDet = verdict(dT.p, dT.n), vPref = verdict(pT.p, pT.n);
+  const need30 = needTri(0.3);
+  const kpi = [];
+  kpi.push(`<div class="kpi"><span class="k-l">Détection · test triangulaire</span>
+    <div class="k-v">${pc(dT.r)}<small>${dT.k} sur ${dT.n}</small></div>
+    ${gauge(dT, 1 / 3, 'hasard 33 %')}
+    <div>${vtag(vDet, dT.p)}</div>
+    <p>Intervalle de confiance à 95 % : ${pc(dT.lo)} à ${pc(dT.hi)}. Part estimée de personnes qui perçoivent réellement une différence : <b>${pc(dT.pd)}</b>.${dT.n < need30 ? ` Pour confirmer un effet moyen (30 %), visez environ ${need30} dégustations test.` : ''}</p></div>`);
+  kpi.push(`<div class="kpi"><span class="k-l">Préférence · verre traité</span>
+    <div class="k-v">${pc(pT.r)}<small>${pT.k} sur ${pT.n}</small></div>
+    ${gauge(pT, 0.5, 'hasard 50 %')}
+    <div>${vtag(vPref, pT.p)}</div>
+    <p>Intervalle de confiance à 95 % : ${pc(pT.lo)} à ${pc(pT.hi)}.${a.prefAmongDet.n ? ` Parmi ceux qui ont trouvé le verre différent : ${pc(a.prefAmongDet.r)} (${a.prefAmongDet.k}/${a.prefAmongDet.n}).` : ''}</p></div>`);
+  const sT = a.soft.T, vSoft = verdict(sT.p, sT.n);
+  kpi.push(`<div class="kpi"><span class="k-l">Douceur perçue · verre traité</span>
+    <div class="k-v">${pc(sT.r)}<small>${sT.k} sur ${sT.n}</small></div>
+    ${gauge(sT, 0.5, 'hasard 50 %')}
+    <div>${vtag(vSoft, sT.p)}</div>
+    <p>Part des participants qui jugent le verre traité « le plus doux, le moins agressif en bouche » (choix forcé, posé après la préférence).${sT.n ? ` Intervalle de confiance à 95 % : ${pc(sT.lo)} à ${pc(sT.hi)}.` : ''} C’est la mesure la plus directe de l’effet attendu du dispositif.</p></div>`);
+  const ru = a.reuse;
+  kpi.push(`<div class="kpi"><span class="k-l">Réutilisation envisagée</span>
+    <div class="k-v">${ru.n ? pc(ru.top2.r) : '–'}<small>${ru.n ? ru.top2.k + ' sur ' + ru.n : ''}</small></div>
+    ${ru.n ? gauge(ru.top2, -5, '') : ''}
+    <div><span class="tag none">Déclaratif</span></div>
+    <p>« Oui, sûrement » ou « Probablement ». ${ru.n ? `Détail : ${REUSE.map(([k, l]) => ru.dist[k] + ' ' + l.toLowerCase()).join(', ')}.` : ''} Une intention déclarée surestime les achats réels.</p></div>`);
+  const w = a.wtp;
+  kpi.push(`<div class="kpi"><span class="k-l">Disposition à payer</span>
+    <div class="k-v">${w.n ? eur(w.median) : '–'}<small>${w.n ? 'médiane · ' + w.n + ' réponses' : ''}</small></div>
+    <div><span class="tag none">Déclaratif</span></div>
+    <p>${w.n ? `Moyenne ${eur(w.mean)}. La moitié centrale des réponses se situe entre ${eur(w.q1)} et ${eur(w.q3)}.` : 'Aucune réponse pour l’instant.'}</p></div>`);
+
+  /* contrôle de la méthode */
+  let ctl;
+  if (!a.nC){
+    ctl = `<p class="hint">Aucune série témoin dans cette sélection. Sans elle, on ne peut pas mesurer l’effet de suggestion : activez les séries témoin dans l’onglet Dégustation.</p>`;
+  } else {
+    const dC = a.det.C, pCt = a.pref.C;
+    const row = (t, exp, obs, read, tone) => `<tr><td>${t}</td><td class="num">${exp}</td><td class="num">${obs}</td><td><span class="tag ${tone}">${read}</span></td></tr>`;
+    const visT = a.vis.T, visC = a.vis.C;
+    const visFlag = Math.max(visT.r || 0, visC.r || 0) > 0.25;
+    ctl = `<div class="tw"><table><thead><tr><th>Vérification</th><th>Attendu</th><th>Observé</th><th>Lecture</th></tr></thead><tbody>
+      ${row('Détection dans les séries témoin', '33 %', dC.n ? rateCell(dC) : '–', dC.p != null && dC.p < 0.05 ? 'Trop élevée : un indice trahit les verres' : 'Cohérent avec le hasard', dC.p != null && dC.p < 0.05 ? 'bad' : 'ok')}
+      ${row('Préférence pour le verre « traité » (témoins)', '50 %', pCt.n ? rateCell(pCt) : '–', pCt.p != null && pCt.p < 0.05 ? 'Biais de position ou de service' : 'Cohérent avec le hasard', pCt.p != null && pCt.p < 0.05 ? 'bad' : 'ok')}
+      ${row('Verre « traité » jugé le plus doux (témoins)', '50 %', a.soft.C.n ? rateCell(a.soft.C) : '–', a.soft.C.p != null && a.soft.C.p < 0.05 ? 'Biais de position ou de service' : 'Cohérent avec le hasard', a.soft.C.p != null && a.soft.C.p < 0.05 ? 'bad' : 'ok')}
+      ${row('Différence perçue : tests contre témoins', 'Test > témoin', `${pc(a.claim.T.r)} contre ${pc(a.claim.C.r)}`, a.claimDiff != null && a.claimDiff < 0.05 && a.claim.T.r > a.claim.C.r ? 'Dépasse la suggestion (' + fmtP(a.claimDiff) + ')' : 'Pas de différence nette avec la suggestion (' + fmtP(a.claimDiff) + ')', a.claimDiff != null && a.claimDiff < 0.05 && a.claim.T.r > a.claim.C.r ? 'ok' : 'neutral')}
+      ${row('Détection : tests contre témoins', 'Test > témoin', `${pc(a.det.T.r)} contre ${pc(dC.r)}`, a.detDiff != null && a.detDiff < 0.05 && a.det.T.r > dC.r ? 'Dépasse la suggestion (' + fmtP(a.detDiff) + ')' : 'Pas de différence nette avec les témoins (' + fmtP(a.detDiff) + ')', a.detDiff != null && a.detDiff < 0.05 && a.det.T.r > dC.r ? 'ok' : 'neutral')}
+      ${row('« Aspect visuel » cité comme différence', '< 25 %', `${pc(visT.r)} (tests), ${pc(visC.r)} (témoins)`, visFlag ? 'Vérifiez que les verres sont indiscernables à l’œil' : 'Pas d’indice visuel', visFlag ? 'warn' : 'ok')}
+    </tbody></table></div>
+    <p class="hint">Avec peu de séries témoin (${a.nC}), ces vérifications restent indicatives. Visez au moins 15 à 20 séries témoin.</p>`;
+  }
+
+  const hT = a.hed.T, hC = a.hed.C;
+  const hedLine = h => h.n ? `Traité <b class="num">${nf1.format(h.mT)}</b>, non traité <b class="num">${nf1.format(h.mU)}</b>, écart <b class="num">${sgn(h.d)}</b>${h.lo != null ? ` (IC 95 % : ${sgn(h.lo)} à ${sgn(h.hi)})` : ''}` : 'Aucune donnée';
+  const hedRead = h => !h.n || h.lo == null ? '' : (h.lo > 0 ? '<span class="tag ok">Écart significatif en faveur du traité</span>' : h.hi < 0 ? '<span class="tag bad">Écart significatif en défaveur du traité</span>' : '<span class="tag neutral">Écart non significatif</span>');
+
+  const attrs = a.attrs.list.filter(x => x.k > 0).sort((x, y) => y.k - x.k);
+  const attrHtml = a.attrs.nDet && attrs.length ? `<div class="bars">${attrs.map(x => `<div class="bar-r"><span>${esc(x.label)}</span><span class="tr"><i style="width:${Math.round(x.share * 100)}%"></i></span><span class="v">${pc(x.share)}</span></div>`).join('')}</div><p class="hint">Part des ${a.attrs.nDet} participants qui ont désigné le bon verre et cité cet élément.</p>` : '<p class="hint">Aucun participant n’a encore désigné le bon verre.</p>';
+
+  const ladder = a.wtp.n ? `<div class="bars">${a.wtp.ladder.map(x => `<div class="bar-r"><span>au moins ${x.t} ${CUR_SYM[CUR]}</span><span class="tr"><i style="width:${Math.round(x.share * 100)}%"></i></span><span class="v">${pc(x.share)}</span></div>`).join('')}</div>` : '<p class="hint">Aucune réponse de prix.</p>';
+
+  const sent = sentences(a);
+  const sentHtml = S.demo ? '<p class="hint">Les phrases à citer ne sont pas générées pour l’exemple simulé.</p>' : (sent.length ? sent.map((t, i) => `<div class="quote"><p id="sent${i}">${esc(t)}</p><div><button type="button" class="btn ghost" data-act="copy" data-t="sent${i}">Copier</button></div></div>`).join('') : '<p class="hint">Disponibles dès les premières dégustations.</p>');
+
+  return `${demoBar}
+  <section class="card">
+    <div><h1>Résultats</h1>
+    <p class="lead" style="margin-top:8px"><b class="num">${a.n}</b> dégustations terminées, <b class="num">${a.participants}</b> participants. <span class="sub">${a.nT} séries test, ${a.nC} séries témoin. Les indicateurs ci-dessous portent sur les séries test.</span></p></div>
+    ${toggle}${filters}
+  </section>
+  <section class="grid2" aria-label="Indicateurs principaux">${kpi.join('')}</section>
+  <section class="blk"><h2>La méthode tient-elle ?</h2>${ctl}</section>
+  <section class="blk"><h2>Plaisir : note de 1 à 7</h2>
+    <p>Séries test : ${hedLine(hT)} ${hedRead(hT)}</p>
+    ${hC.n ? `<p class="sub" style="font-size:13.5px">Séries témoin, pour référence : ${hedLine(hC)}</p>` : ''}</section>
+  <section class="blk"><h2>Par profil</h2>${groupTable(a.bySeg.filter(g => g.n), 'Profil')}</section>
+  <section class="blk"><h2>Par type de vin</h2>${groupTable(a.byType, 'Type')}</section>
+  <section class="blk"><h2>Ce que les testeurs perçoivent</h2>${attrHtml}</section>
+  <section class="blk"><h2>Prix : part des testeurs prêts à payer au moins…</h2>${ladder}
+    ${a.gift.n ? `<p class="sub" style="font-size:13.5px">Tentés de l’offrir : ${pc(a.gift.yes.r)} « oui », ${a.gift.dist.maybe} « peut-être » sur ${a.gift.n}. Envie de goûter d’autres vins (4 ou 5 sur 5) : ${pc(a.curious.top2.r)}${a.curious.non.n ? `, dont ${pc(a.curious.non.r)} chez ceux qui n’aiment pas le vin (${a.curious.non.k}/${a.curious.non.n})` : ''}.</p>` : ''}</section>
+  <section class="blk"><h2>Phrases prêtes à citer</h2>${sentHtml}<p class="hint">Citez toujours l’effectif et la méthode (test interne, en aveugle). N’annoncez rien que ces chiffres ne montrent pas.</p></section>`;
+}
+
+/* ---------- onglet Protocole ---------- */
+function viewProto(){
+  const t = [0.2, 0.3, 0.4].map(x => [x, needTri(x)]), f = [0.6, 0.65, 0.7].map(x => [x, needPref(x)]);
+  return `
+  <section class="card"><h1>Protocole</h1><p class="lead">Ce que mesure chaque partie, et comment organiser une session pour que les chiffres résistent à un sceptique.</p></section>
+  <section class="blk"><h2>Ce que mesure chaque partie</h2>
+    <h3>Partie 1 · test triangulaire</h3>
+    <p>Trois verres, dont deux identiques. Le participant désigne celui qui diffère. Au hasard, 1 personne sur 3 a juste. Si nettement plus de 1 sur 3 trouvent le bon verre, la différence est perceptible. On mesure le <b>taux de détection</b>.</p>
+    <h3>Partie 2 · préférence</h3>
+    <p>Deux verres, l’un traité, l’autre non. Le participant choisit celui qu’il préfère, note chaque verre de 1 à 7 et dit s’il perçoit une différence. Au hasard, 1 personne sur 2 choisit le verre traité. On mesure le <b>taux de préférence</b>.</p>
+    <h3>Douceur perçue</h3>
+    <p>Après avoir donné sa préférence, le participant dit quel verre lui semble le plus doux, le moins agressif (moins de chaleur de l’alcool). C’est un choix forcé entre deux verres, comparé au hasard (50 %) puis aux séries témoin. Cette question est posée en dernier pour ne pas orienter la préférence. Le mot « plus doux » n’apparaît jamais avant.</p>
+    <h3>Séries témoin</h3>
+    <p>Dans 1 série sur 5 environ, aucun verre n’est traité et le participant ne le sait pas. On voit alors combien de personnes « sentent » une différence qui n’existe pas. Sans témoin, un bon score peut s’expliquer par la seule suggestion.</p>
+    <h3>Après la révélation</h3>
+    <p>Le participant dit s’il réutiliserait le dispositif, combien il paierait, s’il l’offrirait. On mesure la <b>réutilisation envisagée</b> et la <b>disposition à payer</b>. Ces réponses sont déclaratives, jamais des ventes.</p></section>
+  <section class="blk"><h2>Ce que le test dit du mécanisme</h2>
+    <p>Le test mesure ce que les gens <b>perçoivent</b> : une différence, une préférence, une impression de douceur. Il ne prouve pas que le dispositif modifie la composition du vin. Pour affirmer qu’il agit sur des molécules d’alcool, il faudrait une analyse chimique indépendante (laboratoire accrédité, vin traité contre vin non traité, plusieurs répétitions). Tant qu’elle n’existe pas, formulez l’effet comme une perception mesurée en aveugle, par exemple « jugé plus doux en bouche par X % des testeurs ».</p>
+    <p>À Hong Kong comme en France ou dans l’Union européenne, une allégation sur l’effet du produit doit pouvoir être justifiée. Vérifiez le libellé exact avec un conseil local avant toute communication commerciale.</p></section>
+  <section class="blk"><h2>Langues, prix et e-mails</h2>
+    <p>Le questionnaire du participant existe en français, anglais et chinois traditionnel (Hong Kong). La langue est choisie par l’animateur et modifiable par le participant. Les résultats restent en français pour l’animateur. Un texte libre (commentaire) est conservé dans la langue de saisie.</p>
+    <p>Le prix est demandé dans la devise choisie pour la session (€, HK$, US$, £) et analysé devise par devise. L’adresse e-mail est facultative, avec une case de consentement distincte. Elle est enregistrée à part, sans lien avec les réponses du test, et exportée dans son propre fichier (onglet Données). Indiquez aux participants qui est le responsable du traitement, et supprimez l’adresse sur simple demande.</p></section>
+  <section class="blk"><h2>Sur le terrain, avec les téléphones</h2>
+    <ul class="checks">
+      <li>L’animateur prépare les verres sur son téléphone, puis touche « C’est prêt » : un QR code s’affiche.</li>
+      <li>Le testeur le scanne avec l’appareil photo de son téléphone. Il remplit son questionnaire dans sa langue. Rien à installer.</li>
+      <li>Quand il a validé la partie 1, l’écran de l’animateur indique de servir les deux verres de la partie 2.</li>
+      <li>Le testeur ne reçoit jamais la composition des verres avant d’avoir envoyé sa préférence : elle est gardée côté serveur.</li>
+      <li>Un testeur qui perd sa connexion peut rouvrir le même lien et reprendre là où il s’était arrêté.</li>
+    </ul></section>
+  <section class="blk"><h2>Avant la session</h2>
+    <ul class="checks">
+      <li>Une seule bouteille, du même lot, pour tous les verres d’un vin. Même température de service.</li>
+      <li>Verres identiques, propres, même volume. Si possible opaques ou foncés, pour masquer toute différence de couleur ou de limpidité.</li>
+      <li>Le dispositif est appliqué hors de vue du participant. Sur les verres non traités, faites le même geste avec un liège neutre, identique d’aspect mais sans la technologie : le test compare alors la technologie, pas la présence d’un bouchon.</li>
+      <li>Collez sous le pied de chaque verre une pastille de la couleur indiquée sur la fiche (vert, jaune, rouge, orange, bleu), en cachant le geste au testeur. Les couleurs sont tirées au sort pour chaque dégustation, comme l’ordre.</li>
+      <li>Servez sans commentaire, sans sourire entendu. Aucun échange entre participants avant la fin des réponses.</li>
+      <li>De l’eau et un peu de pain neutre entre les parties. Les verres de la partie 2 ne sont servis qu’après la partie 1.</li>
+      <li>Notez les conditions dans le nom de session (lieu, jour, vin). Réservé aux personnes majeures. Aucun nom n’est collecté.</li>
+    </ul></section>
+  <section class="blk"><h2>Combien de dégustations prévoir</h2>
+    <p>Plus l’effet réel est petit, plus il faut de monde pour le distinguer du hasard. Calcul exact, seuil de 5 %, probabilité de détecter l’effet s’il existe : 80 %. Ces effectifs concernent les séries test, sans compter les témoins.</p>
+    <div class="tw"><table><thead><tr><th>Mesure</th><th>Si la vraie valeur est…</th><th class="r">Dégustations test</th></tr></thead><tbody>
+      ${t.map(([x, n]) => `<tr><td>Détection</td><td>${Math.round(x * 100)} % de personnes qui perçoivent vraiment une différence</td><td class="r num">${n || '> 400'}</td></tr>`).join('')}
+      ${f.map(([x, n]) => `<tr><td>Préférence</td><td>${Math.round(x * 100)} % préfèrent le verre traité</td><td class="r num">${n || '> 400'}</td></tr>`).join('')}
+    </tbody></table></div>
+    <p class="hint">Sous 30 dégustations test, un résultat reste fragile. Pour comparer les profils (sommeliers, amateurs, non-consommateurs) ou les types de vin, prévoyez ces effectifs pour chaque groupe.</p></section>
+  <section class="blk"><h2>Lire les résultats</h2>
+    <p><b>Intervalle de confiance à 95 %</b> : la fourchette dans laquelle se trouve probablement la vraie valeur. Si elle exclut la valeur du hasard (trait pointillé), le résultat est solide.</p>
+    <p><b>p</b> : la probabilité d’obtenir un résultat aussi marqué si seul le hasard jouait. Sous 0,05, on parle de résultat significatif.</p>
+    <p><b>Une dégustation par participant</b> : si une même personne goûte plusieurs vins, ses réponses ne sont pas indépendantes. Ce filtre ne garde que sa première dégustation.</p></section>
+  <section class="blk"><h2>Ce que vous pourrez affirmer</h2>
+    <ul class="checks"><li>« ${'X'} % de ${'N'} testeurs ont identifié le verre différent lors d’un test en aveugle, contre 33 % attendus par hasard. »</li>
+    <li>Ce que les séries témoin montrent de l’effet de suggestion, avec leurs effectifs.</li></ul>
+    <ul class="checks no"><li>« Scientifiquement prouvé », tant qu’aucune étude indépendante n’est publiée.</li>
+    <li>Toute promesse sur la santé, ou une explication du mécanisme que vous ne maîtrisez pas.</li></ul></section>`;
+}
+
+/* ---------- onglet Données ---------- */
+function viewData(){
+  const recs = S.records.slice().sort((a, b) => (b.createdAt || '').localeCompare(a.createdAt || ''));
+  const st = { complete: ['ok', 'Terminée'], assigned: ['warn', 'Non terminée'] };
+  return `
+  <section class="card"><h1>Données des tests</h1>
+    <p class="lead">${recs.length} dégustation${recs.length > 1 ? 's' : ''} enregistrée${recs.length > 1 ? 's' : ''}. Le CSV contient toutes les réponses brutes, ouvrable dans Excel.</p>
+    <div class="row"><button type="button" class="btn" data-act="csv" ${recs.length ? '' : 'disabled'}>Exporter en CSV</button><button type="button" class="btn ghost" data-act="csvCopy" ${recs.length ? '' : 'disabled'}>Copier le CSV</button></div>
+    ${S.csv ? `<div class="field"><label for="f-csv">CSV</label><textarea id="f-csv" readonly style="min-height:160px;font-family:var(--f-mono);font-size:12px">${esc(S.csv)}</textarea></div>` : ''}
+  </section>
+  <section class="card"><h2>Contacts e-mail</h2>
+    <p class="lead">${S.contacts.length} adresse${S.contacts.length > 1 ? 's' : ''} avec consentement. Elles ne sont pas rattachées aux réponses des tests.</p>
+    <div class="row"><button type="button" class="btn" data-act="csvContacts" ${S.contacts.length ? '' : 'disabled'}>Exporter les contacts</button><button type="button" class="btn ghost" data-act="copyContacts" ${S.contacts.length ? '' : 'disabled'}>Copier</button></div>
+    ${S.contacts.length ? `<div class="tw"><table><thead><tr><th>E-mail</th><th>Langue</th><th>Session</th><th></th></tr></thead><tbody>${S.contacts.map(c => `<tr><td>${esc(c.email)}</td><td>${esc(c.lang)}</td><td>${esc(c.session)}</td><td>${S.confirmDel === c.id ? `<button type="button" class="btn" data-act="delYes" data-id="${esc(c.id)}">Confirmer</button> <button type="button" class="btn quiet" data-act="delNo">Non</button>` : `<button type="button" class="btn quiet" data-act="del" data-id="${esc(c.id)}">Supprimer</button>`}</td></tr>`).join('')}</tbody></table></div>` : ''}
+  </section>
+  ${recs.length ? `<div class="tw"><table><thead><tr><th>Participant</th><th>Session</th><th>Vin</th><th>Série</th><th>Détection</th><th>Préféré</th><th class="r">Prix</th><th>État</th><th></th></tr></thead><tbody>
+  ${recs.map(r => {
+    const s = st[r.status] || ['neutral', r.status];
+    const det = r.tri && r.tri.pick != null ? (triCorrect(r) ? 'Juste' : 'Faux') : '–';
+    const pf = r.pref && r.pref.pick != null ? (prefPickedT(r) ? 'Traité' : 'Non traité') : '–';
+    return `<tr><td><b>${esc(r.pid)}</b>${r.round > 1 ? ` <span class="sub">vin ${r.round}</span>` : ''}</td><td>${esc(r.session)}</td><td>${esc(r.wine && r.wine.name)}<br><span class="sub">${esc(r.wine && r.wine.type)}</span></td><td>${r.arm === 'control' ? 'Témoin' : 'Test'}</td><td>${det}</td><td>${pf}</td><td class="r num">${r.post && typeof r.post.wtp === 'number' ? money(r.post.wtp, curOf(r)) : '–'}</td><td><span class="tag ${s[0]}">${s[1]}</span></td>
+      <td>${S.confirmDel === r.id ? `<button type="button" class="btn" data-act="delYes" data-id="${esc(r.id)}">Confirmer</button> <button type="button" class="btn quiet" data-act="delNo">Non</button>` : `<button type="button" class="btn quiet" data-act="del" data-id="${esc(r.id)}" aria-label="Supprimer ${esc(r.pid)}">Supprimer</button>`}</td></tr>`;
+  }).join('')}</tbody></table></div>` : '<p class="hint">Rien à afficher pour l’instant.</p>'}`;
+}
+
+/* ---------- démarrage ---------- */
+async function boot(){
+  if (TESTER){ if (!CONFIGURED){ S.tstate = 'err'; render(); return; } return loadTester(); }
+  if (CONFIGURED && API.auth){ try { await API.ensureFresh(); S.auth = API.auth; } catch (e) { S.auth = null; } }
+  render();
+  if (S.auth) store.init();
+}
+boot();
+</script>
+</body></html>
